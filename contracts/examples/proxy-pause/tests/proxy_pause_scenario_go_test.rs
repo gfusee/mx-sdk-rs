@@ -5,11 +5,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn init_go() {
-    world().run("scenarios/init.scen.json");
+fn init_go() -> anyhow::Result<()> {
+    world().run("scenarios/init.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn pause_and_unpause_go() {
-    world().run("scenarios/pause-and-unpause.scen.json");
+fn pause_and_unpause_go() -> anyhow::Result<()> {
+    world().run("scenarios/pause-and-unpause.scen.json")?;
+
+    Ok(())
 }

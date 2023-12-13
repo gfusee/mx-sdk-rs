@@ -1,3 +1,4 @@
+use anyhow::bail;
 use multiversx_chain_vm_executor::{CompilationOptions, Instance};
 
 use crate::{
@@ -42,11 +43,13 @@ fn get_contract_identifier(tx_context: &TxContext) -> anyhow::Result<Vec<u8>> {
     tx_context
         .tx_cache
         .with_account(&tx_context.tx_input_box.to, |account| {
-            account.contract_path.clone().unwrap_or_else(|| {
-                panic!(
+            let Some(contract_path) = account.contract_path.clone() else {
+                bail!(
                     "Recipient account is not a smart contract {}",
                     address_hex(&tx_context.tx_input_box.to)
                 )
-            })
+            };
+
+            Ok(contract_path)
         })
 }

@@ -13,7 +13,7 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn adder_blackbox_with_values() {
+fn adder_blackbox_with_values() -> anyhow::Result<()> {
     let mut world = world();
     let owner_address = "address:owner";
     let mut adder_contract = ContractInfo::<adder::Proxy<StaticApi>>::new("sc:adder");
@@ -25,7 +25,7 @@ fn adder_blackbox_with_values() {
             SetStateStep::new()
                 .put_account(owner_address, Account::new().nonce(1))
                 .new_address(owner_address, 1, "sc:adder"),
-        )
+        )?
         .sc_deploy_use_result(
             ScDeployStep::new()
                 .from(owner_address)
@@ -34,19 +34,19 @@ fn adder_blackbox_with_values() {
             |new_address, _: TypedResponse<()>| {
                 assert_eq!(new_address, adder_contract.to_address());
             },
-        )
+        )?
         .sc_query(
             ScQueryStep::new()
                 .to(&adder_contract)
                 .call(adder_contract.sum())
                 .expect_value(SingleValue::from(BigUint::from(5u32))),
-        )
+        )?
         .sc_call(
             ScCallStep::new()
                 .from(owner_address)
                 .to(&adder_contract)
                 .call(adder_contract.add(3u32)),
-        )
+        )?
         .check_state_step(
             CheckStateStep::new()
                 .put_account(owner_address, CheckAccount::new())
@@ -54,6 +54,8 @@ fn adder_blackbox_with_values() {
                     &adder_contract,
                     CheckAccount::new().check_storage("str:sum", "8"),
                 ),
-        )
+        )?
         .write_scenario_trace("trace1.scen.json");
+
+    Ok(())
 }

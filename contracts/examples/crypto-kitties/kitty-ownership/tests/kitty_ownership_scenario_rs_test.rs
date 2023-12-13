@@ -16,31 +16,43 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn approve_siring_rs() {
-    world().run("scenarios/approve_siring.scen.json");
+fn approve_siring_rs() -> anyhow::Result<()> {
+    world().run("scenarios/approve_siring.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn breed_ok_rs() {
-    world().run("scenarios/breed_ok.scen.json");
+fn breed_ok_rs() -> anyhow::Result<()> {
+    world().run("scenarios/breed_ok.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn give_birth_rs() {
-    world().run("scenarios/give_birth.scen.json");
+fn give_birth_rs() -> anyhow::Result<()> {
+    world().run("scenarios/give_birth.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn init_rs() {
-    world().run("scenarios/init.scen.json");
+fn init_rs() -> anyhow::Result<()> {
+    world().run("scenarios/init.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn query_rs() {
-    world().run("scenarios/query.scen.json");
+fn query_rs() -> anyhow::Result<()> {
+    world().run("scenarios/query.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn setup_accounts_rs() {
-    world().run("scenarios/setup_accounts.scen.json");
+fn setup_accounts_rs() -> anyhow::Result<()> {
+    world().run("scenarios/setup_accounts.scen.json")?;
+
+    Ok(())
 }

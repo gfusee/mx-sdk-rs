@@ -5,6 +5,8 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn empty_go() {
-    world().run("scenarios/empty.scen.json");
+fn empty_go() -> anyhow::Result<()> {
+    world().run("scenarios/empty.scen.json")?;
+
+    Ok(())
 }

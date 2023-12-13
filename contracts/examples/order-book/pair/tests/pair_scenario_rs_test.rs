@@ -12,31 +12,43 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn cancel_all_orders_rs() {
-    world().run("scenarios/cancel_all_orders.scen.json");
+fn cancel_all_orders_rs() -> anyhow::Result<()> {
+    world().run("scenarios/cancel_all_orders.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn cancel_orders_rs() {
-    world().run("scenarios/cancel_orders.scen.json");
+fn cancel_orders_rs() -> anyhow::Result<()> {
+    world().run("scenarios/cancel_orders.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn create_buy_order_check_rs() {
-    world().run("scenarios/create_buy_order_check.scen.json");
+fn create_buy_order_check_rs() -> anyhow::Result<()> {
+    world().run("scenarios/create_buy_order_check.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn create_sell_order_check_rs() {
-    world().run("scenarios/create_sell_order_check.scen.json");
+fn create_sell_order_check_rs() -> anyhow::Result<()> {
+    world().run("scenarios/create_sell_order_check.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn free_orders_rs() {
-    world().run("scenarios/free_orders.scen.json");
+fn free_orders_rs() -> anyhow::Result<()> {
+    world().run("scenarios/free_orders.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn match_orders_rs() {
-    world().run("scenarios/match_orders.scen.json");
+fn match_orders_rs() -> anyhow::Result<()> {
+    world().run("scenarios/match_orders.scen.json")?;
+
+    Ok(())
 }

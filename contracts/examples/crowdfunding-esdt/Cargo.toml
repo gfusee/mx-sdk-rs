@@ -9,14 +9,17 @@ publish = false
 path = "src/crowdfunding_esdt.rs"
 
 [dependencies.multiversx-sc]
-version = "0.44.0"
+version = "0.45.1"
 path = "../../../framework/base"
 
 [dev-dependencies.multiversx-sc-scenario]
-version = "0.44.0"
+version = "0.45.1"
 path = "../../../framework/scenario"
 
 [dev-dependencies]
 num-bigint = "0.4.2"
 num-traits = "0.2"
 hex = "0.4"
+
+[dev-dependencies.anyhow]
+version = "1.0.75"

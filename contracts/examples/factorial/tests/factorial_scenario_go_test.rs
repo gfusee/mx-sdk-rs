@@ -5,6 +5,8 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn factorial_go() {
-    world().run("scenarios/factorial.scen.json");
+fn factorial_go() -> anyhow::Result<()> {
+    world().run("scenarios/factorial.scen.json")?;
+
+    Ok(())
 }

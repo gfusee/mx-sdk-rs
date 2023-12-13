@@ -12,7 +12,7 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn adder_whitebox() {
+fn adder_whitebox() -> anyhow::Result<()> {
     let mut world = world();
     let adder_whitebox = WhiteboxContract::new("sc:adder", adder::contract_obj);
     let adder_code = world.code_expression(ADDER_PATH_EXPR);
@@ -22,23 +22,23 @@ fn adder_whitebox() {
             SetStateStep::new()
                 .put_account("address:owner", Account::new().nonce(1))
                 .new_address("address:owner", 1, "sc:adder"),
-        )
+        )?
         .whitebox_deploy(
             &adder_whitebox,
             ScDeployStep::new().from("address:owner").code(adder_code),
             |sc| {
                 sc.init(5u32.into());
             },
-        )
+        )?
         .whitebox_query(&adder_whitebox, |sc| {
             let sum_value = sc.sum();
             assert_eq!(sum_value.get(), 5u32);
-        })
+        })?
         .whitebox_call(
             &adder_whitebox,
             ScCallStep::new().from("address:owner"),
             |sc| sc.add(3u32.into()),
-        )
+        )?
         .check_state_step(
             CheckStateStep::new()
                 .put_account("address:owner", CheckAccount::new())
@@ -46,5 +46,7 @@ fn adder_whitebox() {
                     "sc:adder",
                     CheckAccount::new().check_storage("str:sum", "8"),
                 ),
-        );
+        )?;
+
+    Ok(())
 }

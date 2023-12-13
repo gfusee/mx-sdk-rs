@@ -9,11 +9,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn adder_rs() {
-    world().run("scenarios/adder.scen.json");
+fn adder_rs() -> anyhow::Result<()> {
+    world().run("scenarios/adder.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn interactor_trace_rs() {
-    world().run("scenarios/interactor_trace.scen.json");
+fn interactor_trace_rs() -> anyhow::Result<()> {
+    world().run("scenarios/interactor_trace.scen.json")?;
+
+    Ok(())
 }

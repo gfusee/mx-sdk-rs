@@ -29,6 +29,7 @@ fn payable_multi() {
                         .esdt_nft_balance("str:SFT-123", 5u32, 10u32, Option::<()>::None) 
                 ),
         )
+        .unwrap()
         .sc_call(
             ScCallStep::new()
                 .from("address:an-account")
@@ -41,5 +42,6 @@ fn payable_multi() {
                         .result("0")
                         .result("nested:str:TOK-000001|u64:0|biguint:100|nested:str:TOK-000002|u64:0|biguint:400")
                 ),
-        );
+        )
+        .unwrap();
 }

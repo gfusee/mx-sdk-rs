@@ -5,11 +5,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn generate_kitty_genes_go() {
-    world().run("scenarios/generate-kitty-genes.scen.json");
+fn generate_kitty_genes_go() -> anyhow::Result<()> {
+    world().run("scenarios/generate-kitty-genes.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn init_go() {
-    world().run("scenarios/init.scen.json");
+fn init_go() -> anyhow::Result<()> {
+    world().run("scenarios/init.scen.json")?;
+
+    Ok(())
 }

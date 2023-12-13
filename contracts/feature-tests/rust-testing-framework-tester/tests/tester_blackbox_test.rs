@@ -31,6 +31,7 @@ fn tester_deploy_test() {
                 .put_account(owner_address, Account::new())
                 .new_address(owner_address, 0, &adder_contract),
         )
+        .unwrap()
         .sc_deploy_use_result(
             ScDeployStep::new()
                 .from(owner_address)
@@ -41,6 +42,7 @@ fn tester_deploy_test() {
                 assert_eq!(tr.result.unwrap(), "constructor-result");
             },
         )
+        .unwrap()
         .write_scenario_trace("scenarios/trace-deploy.scen.json");
 }
 
@@ -61,6 +63,7 @@ fn tester_deploy_test_spawned_thread() {
                     .put_account(owner_address, Account::new())
                     .new_address(owner_address, 0, &adder_contract),
             )
+            .unwrap()
             .sc_deploy_use_result(
                 ScDeployStep::new()
                     .from(owner_address)
@@ -71,6 +74,7 @@ fn tester_deploy_test_spawned_thread() {
                     assert_eq!(tr.result.unwrap(), "constructor-result");
                 },
             )
+            .unwrap()
             .write_scenario_trace("scenarios/trace-deploy.scen.json");
     });
 

@@ -35,7 +35,7 @@ const SECOND_ROYALTIES: u64 = 5_000;
 const FIRST_URIS: &[&[u8]] = &[b"FirstUri", b"SecondUri"];
 
 #[test]
-fn test_add() {
+fn test_add() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let sc_wrapper = wrapper.create_sc_account(
         &rust_biguint!(0),
@@ -52,12 +52,14 @@ fn test_add() {
             let expected_result = first.clone() + second.clone();
             let actual_result = sc.sum(first, second);
             assert_values_eq!(expected_result, actual_result);
-        })
+        })?
         .assert_ok();
+    
+    Ok(())
 }
 
 #[test]
-fn test_add_spawned_thread() {
+fn test_add_spawned_thread() -> anyhow::Result<()> {
     let handler = std::thread::spawn(|| {
         let mut wrapper = BlockchainStateWrapper::new();
         let sc_wrapper = wrapper.create_sc_account(
@@ -76,10 +78,13 @@ fn test_add_spawned_thread() {
                 let actual_result = sc.sum(first, second);
                 assert_values_eq!(expected_result, actual_result);
             })
+            .unwrap()
             .assert_ok();
     });
 
     handler.join().unwrap();
+
+    Ok(())
 }
 
 #[should_panic]
@@ -102,11 +107,12 @@ fn test_add_wrong_expect() {
             let actual_result = sc.sum(first, second);
             assert_values_eq!(expected_result, actual_result);
         })
+        .unwrap()
         .assert_ok();
 }
 
 #[test]
-fn test_sc_result_ok() {
+fn test_sc_result_ok() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let sc_wrapper = wrapper.create_sc_account(
         &rust_biguint!(0),
@@ -123,12 +129,14 @@ fn test_sc_result_ok() {
             let expected_result = first.clone() + second.clone();
             let actual_result = sc.sum_sc_result(first, second);
             assert_eq!(expected_result, actual_result);
-        })
+        })?
         .assert_ok();
+    
+    Ok(())
 }
 
 #[test]
-fn test_sc_result_ok_unwrap() {
+fn test_sc_result_ok_unwrap() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let sc_wrapper = wrapper.create_sc_account(
         &rust_biguint!(0),
@@ -145,12 +153,14 @@ fn test_sc_result_ok_unwrap() {
             let expected_result = first.clone() + second.clone();
             let actual_result = sc.sum_sc_result(first, second);
             assert_eq!(expected_result, actual_result);
-        })
+        })?
         .assert_ok();
+    
+    Ok(())
 }
 
 #[test]
-fn test_sc_result_err() {
+fn test_sc_result_err() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let sc_wrapper = wrapper.create_sc_account(
         &rust_biguint!(0),
@@ -165,8 +175,10 @@ fn test_sc_result_err() {
             let second = managed_biguint!(2000);
 
             let _ = sc.sum_sc_result(first, second);
-        })
+        })?
         .assert_user_error("Non-zero required");
+
+    Ok(())
 }
 
 #[should_panic(
@@ -189,6 +201,7 @@ fn test_sc_result_err_unwrap() {
 
             let _ = sc.sum_sc_result(first, second);
         })
+        .unwrap()
         .assert_ok();
 }
 
@@ -213,11 +226,12 @@ fn test_assert_err_with_ok() {
             let _ = sc.sum_sc_result(first, second);
             // assert_sc_panic!(actual_result, "Non-zero required");
         })
+        .unwrap()
         .assert_user_error("Non-zero required");
 }
 
 #[test]
-fn test_sc_payment_ok() {
+fn test_sc_payment_ok() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let caller_addr = wrapper.create_user_account(&rust_biguint!(1_000));
     let sc_wrapper = wrapper.create_sc_account(
@@ -232,15 +246,17 @@ fn test_sc_payment_ok() {
             let actual_payment = sc.receive_egld();
             let expected_payment = managed_biguint!(1_000);
             assert_eq!(actual_payment, expected_payment);
-        })
+        })?
         .assert_ok();
 
     wrapper.check_egld_balance(&caller_addr, &rust_biguint!(0));
     wrapper.check_egld_balance(sc_wrapper.address_ref(), &rust_biguint!(3_000));
+
+    Ok(())
 }
 
 #[test]
-fn test_sc_payment_reverted() {
+fn test_sc_payment_reverted() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let caller_addr = wrapper.create_user_account(&rust_biguint!(1_000));
     let sc_wrapper = wrapper.create_sc_account(
@@ -253,15 +269,17 @@ fn test_sc_payment_reverted() {
     wrapper
         .execute_tx(&caller_addr, &sc_wrapper, &rust_biguint!(1_000), |sc| {
             sc.reject_payment();
-        })
+        })?
         .assert_user_error("No payment allowed!");
 
     wrapper.check_egld_balance(&caller_addr, &rust_biguint!(1_000));
     wrapper.check_egld_balance(sc_wrapper.address_ref(), &rust_biguint!(2_000));
+
+    Ok(())
 }
 
 #[test]
-fn test_sc_half_payment() {
+fn test_sc_half_payment() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let caller_addr = wrapper.create_user_account(&rust_biguint!(1_000));
     let sc_wrapper = wrapper.create_sc_account(
@@ -274,15 +292,17 @@ fn test_sc_half_payment() {
     wrapper
         .execute_tx(&caller_addr, &sc_wrapper, &rust_biguint!(1_000), |sc| {
             sc.recieve_egld_half();
-        })
+        })?
         .assert_ok();
 
     wrapper.check_egld_balance(&caller_addr, &rust_biguint!(500));
     wrapper.check_egld_balance(sc_wrapper.address_ref(), &rust_biguint!(2_500));
+
+    Ok(())
 }
 
 #[test]
-fn test_esdt_balance() {
+fn test_esdt_balance() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let sc_wrapper = wrapper.create_sc_account(
         &rust_biguint!(0),
@@ -302,15 +322,17 @@ fn test_esdt_balance() {
             let actual_balance = sc.get_esdt_balance(managed_id, 0);
             let expected_balance = managed_biguint!(1_000);
             assert_eq!(expected_balance, actual_balance);
-        })
+        })?
         .assert_ok();
 
     wrapper.add_mandos_check_account(sc_wrapper.address_ref());
     wrapper.write_mandos_output(TEST_ESDT_OUTPUT_PATH);
+
+    Ok(())
 }
 
 #[test]
-fn test_esdt_payment_ok() {
+fn test_esdt_payment_ok() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let rust_zero = rust_biguint!(0);
 
@@ -340,15 +362,17 @@ fn test_esdt_payment_ok() {
                 assert_eq!(actual_token_id, managed_token_id!(token_id));
                 assert_eq!(actual_payment, expected_payment);
             },
-        )
+        )?
         .assert_ok();
 
     wrapper.check_esdt_balance(&caller_addr, token_id, &rust_zero);
     wrapper.check_esdt_balance(sc_wrapper.address_ref(), token_id, &rust_biguint!(3_000));
+
+    Ok(())
 }
 
 #[test]
-fn test_esdt_payment_reverted() {
+fn test_esdt_payment_reverted() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let rust_zero = rust_biguint!(0);
 
@@ -374,15 +398,17 @@ fn test_esdt_payment_reverted() {
             |sc| {
                 sc.reject_payment();
             },
-        )
+        )?
         .assert_user_error("No payment allowed!");
 
     wrapper.check_esdt_balance(&caller_addr, token_id, &rust_biguint!(1_000));
     wrapper.check_esdt_balance(sc_wrapper.address_ref(), token_id, &rust_biguint!(2_000));
+
+    Ok(())
 }
 
 #[test]
-fn test_nft_balance() {
+fn test_nft_balance() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let sc_wrapper = wrapper.create_sc_account(
         &rust_biguint!(0),
@@ -420,8 +446,10 @@ fn test_nft_balance() {
             let actual_balance = sc.get_esdt_balance(managed_id, nft_nonce);
             let expected_balance = managed_biguint!(1_000);
             assert_eq!(expected_balance, actual_balance);
-        })
+        })?
         .assert_ok();
+    
+    Ok(())
 }
 
 #[should_panic]
@@ -452,7 +480,7 @@ fn check_nft_zero_balance() {
 }
 
 #[test]
-fn test_sc_send_nft_to_user() {
+fn test_sc_send_nft_to_user() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let caller_addr = wrapper.create_user_account(&rust_biguint!(0));
     let sc_wrapper = wrapper.create_sc_account(
@@ -490,7 +518,7 @@ fn test_sc_send_nft_to_user() {
             let managed_id = managed_token_id!(token_id);
             let managed_amt = managed_biguint!(400);
             sc.send_nft(managed_addr, managed_id, nft_nonce, managed_amt);
-        })
+        })?
         .assert_ok();
 
     wrapper.check_nft_balance(
@@ -507,10 +535,12 @@ fn test_sc_send_nft_to_user() {
         &rust_biguint!(600),
         Some(&nft_attributes),
     );
+
+    Ok(())
 }
 
 #[test]
-fn test_sc_esdt_mint_burn() {
+fn test_sc_esdt_mint_burn() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let caller_addr = wrapper.create_user_account(&rust_biguint!(0));
     let sc_wrapper = wrapper.create_sc_account(
@@ -532,7 +562,7 @@ fn test_sc_esdt_mint_burn() {
             let managed_id = managed_token_id!(token_id);
             let managed_amt = managed_biguint!(400);
             sc.mint_esdt(managed_id, 0, managed_amt);
-        })
+        })?
         .assert_ok();
 
     wrapper.check_esdt_balance(sc_wrapper.address_ref(), token_id, &rust_biguint!(400));
@@ -542,14 +572,16 @@ fn test_sc_esdt_mint_burn() {
             let managed_id = managed_token_id!(token_id);
             let managed_amt = managed_biguint!(100);
             sc.burn_esdt(managed_id, 0, managed_amt);
-        })
+        })?
         .assert_ok();
 
     wrapper.check_esdt_balance(sc_wrapper.address_ref(), token_id, &rust_biguint!(300));
+
+    Ok(())
 }
 
 #[test]
-fn test_sc_nft() {
+fn test_sc_nft() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let caller_addr = wrapper.create_user_account(&rust_biguint!(0));
     let sc_wrapper = wrapper.create_sc_account(
@@ -588,7 +620,7 @@ fn test_sc_nft() {
 
             let nft_nonce_second = sc.create_nft(managed_id, managed_amt, nft_attributes.clone());
             assert_eq!(nft_nonce_second, 2u64);
-        })
+        })?
         .assert_ok();
 
     wrapper.check_nft_balance(
@@ -611,7 +643,7 @@ fn test_sc_nft() {
             let managed_id = managed_token_id!(token_id);
             let managed_amt = managed_biguint!(100);
             sc.mint_esdt(managed_id, 1, managed_amt);
-        })
+        })?
         .assert_ok();
 
     wrapper.check_nft_balance(
@@ -634,7 +666,7 @@ fn test_sc_nft() {
             let managed_id = managed_token_id!(token_id);
             let managed_amt = managed_biguint!(50);
             sc.burn_esdt(managed_id, 2, managed_amt);
-        })
+        })?
         .assert_ok();
 
     wrapper.check_nft_balance(
@@ -651,10 +683,12 @@ fn test_sc_nft() {
         &rust_biguint!(50),
         Some(&nft_attributes),
     );
+
+    Ok(())
 }
 
 #[test]
-fn test_over_set_nft() {
+fn test_over_set_nft() -> anyhow::Result<()> {
     let rust_zero = rust_biguint!(0);
     let mut b_mock = BlockchainStateWrapper::new();
     let user = b_mock.create_user_account(&rust_zero);
@@ -701,12 +735,14 @@ fn test_over_set_nft() {
                 merged_token_data.royalties,
                 managed_biguint!(SECOND_ROYALTIES)
             );
-        })
+        })?
         .assert_ok();
+    
+    Ok(())
 }
 
 #[test]
-fn test_esdt_multi_transfer() {
+fn test_esdt_multi_transfer() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let caller_addr = wrapper.create_user_account(&rust_biguint!(0));
     let sc_wrapper = wrapper.create_sc_account(
@@ -775,7 +811,7 @@ fn test_esdt_multi_transfer() {
                 actual_transfers[1].token_nonce
             );
             assert_eq!(expected_transfers[1].amount, actual_transfers[1].amount);
-        })
+        })?
         .assert_ok();
 
     wrapper.check_esdt_balance(sc_wrapper.address_ref(), token_id_1, &rust_biguint!(100));
@@ -786,10 +822,12 @@ fn test_esdt_multi_transfer() {
         &rust_biguint!(1),
         None,
     );
+
+    Ok(())
 }
 
 #[test]
-fn test_query() {
+fn test_query() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let sc_wrapper = wrapper.create_sc_account(
         &rust_biguint!(2_000),
@@ -803,10 +841,12 @@ fn test_query() {
         let expected_balance = managed_biguint!(2_000);
         assert_eq!(actual_balance, expected_balance);
     });
+
+    Ok(())
 }
 
 #[test]
-fn storage_check_test() {
+fn storage_check_test() -> anyhow::Result<()> {
     let rust_zero = rust_biguint!(0);
     let mut wrapper = BlockchainStateWrapper::new();
     let user_addr = wrapper.create_user_account(&rust_zero);
@@ -821,7 +861,7 @@ fn storage_check_test() {
     wrapper
         .execute_tx(&user_addr, &sc_wrapper, &rust_zero, |sc| {
             sc.init();
-        })
+        })?
         .assert_ok();
 
     wrapper
@@ -843,7 +883,7 @@ fn storage_check_test() {
 
             assert_eq!(expected_total_after, actual_total_after);
             assert_eq!(expected_per_caller_after, actual_per_caller_after);
-        })
+        })?
         .assert_ok();
 
     wrapper
@@ -856,12 +896,14 @@ fn storage_check_test() {
 
             assert_eq!(expected_total, actual_total);
             assert_eq!(expected_per_caller, actual_per_caller);
-        })
+        })?
         .assert_ok();
+    
+    Ok(())
 }
 
 #[test]
-fn storage_revert_test() {
+fn storage_revert_test() -> anyhow::Result<()> {
     let rust_zero = rust_biguint!(0);
     let mut wrapper = BlockchainStateWrapper::new();
     let user_addr = wrapper.create_user_account(&rust_zero);
@@ -876,7 +918,7 @@ fn storage_revert_test() {
     wrapper
         .execute_tx(&user_addr, &sc_wrapper, &rust_zero, |sc| {
             sc.init();
-        })
+        })?
         .assert_ok();
 
     wrapper
@@ -900,7 +942,7 @@ fn storage_revert_test() {
             assert_eq!(expected_per_caller_after, actual_per_caller_after);
 
             sc.panic();
-        })
+        })?
         .assert_user_error("Oh no!");
 
     wrapper
@@ -913,12 +955,14 @@ fn storage_revert_test() {
 
             assert_eq!(expected_total, actual_total);
             assert_eq!(expected_per_caller, actual_per_caller);
-        })
+        })?
         .assert_ok();
+    
+    Ok(())
 }
 
 #[test]
-fn storage_set_test() {
+fn storage_set_test() -> anyhow::Result<()> {
     let rust_zero = rust_biguint!(0);
     let mut wrapper = BlockchainStateWrapper::new();
     let user_addr = wrapper.create_user_account(&rust_zero);
@@ -933,7 +977,7 @@ fn storage_set_test() {
     wrapper
         .execute_tx(&user_addr, &sc_wrapper, &rust_zero, |sc| {
             sc.init();
-        })
+        })?
         .assert_ok();
 
     wrapper
@@ -941,7 +985,7 @@ fn storage_set_test() {
             sc.total_value().set(&managed_biguint!(50));
             sc.value_per_caller(&managed_address!(&user_addr))
                 .set(&managed_biguint!(50));
-        })
+        })?
         .assert_ok();
 
     wrapper
@@ -953,12 +997,14 @@ fn storage_set_test() {
 
             assert_eq!(expected_value, actual_total);
             assert_eq!(expected_value, actual_per_caller);
-        })
+        })?
         .assert_ok();
+    
+    Ok(())
 }
 
 #[test]
-fn blockchain_state_test() {
+fn blockchain_state_test() -> anyhow::Result<()> {
     let rust_zero = rust_biguint!(0);
     let mut wrapper = BlockchainStateWrapper::new();
     let sc_wrapper = wrapper.create_sc_account(
@@ -985,12 +1031,14 @@ fn blockchain_state_test() {
             assert_eq!(expected_epoch, actual_epoch);
             assert_eq!(expected_nonce, actual_nonce);
             assert_eq!(expected_timestamp, actual_timestamp);
-        })
+        })?
         .assert_ok();
+    
+    Ok(())
 }
 
 #[test]
-fn execute_on_dest_context_query_test() {
+fn execute_on_dest_context_query_test() -> anyhow::Result<()> {
     let rust_zero = rust_biguint!(0);
     let mut wrapper = BlockchainStateWrapper::new();
     let user_addr = wrapper.create_user_account(&rust_zero);
@@ -1010,7 +1058,7 @@ fn execute_on_dest_context_query_test() {
     wrapper
         .execute_tx(&user_addr, &other_sc_wrapper, &rust_zero, |sc| {
             sc.total_value().set(&managed_biguint!(5));
-        })
+        })?
         .assert_ok();
 
     wrapper
@@ -1022,12 +1070,14 @@ fn execute_on_dest_context_query_test() {
                     .clone()));
 
             assert_eq!(expected_result, actual_result);
-        })
+        })?
         .assert_ok();
+    
+    Ok(())
 }
 
 #[test]
-fn execute_on_dest_context_change_state_test() {
+fn execute_on_dest_context_change_state_test() -> anyhow::Result<()> {
     let rust_zero = rust_biguint!(0);
     let mut wrapper = BlockchainStateWrapper::new();
     let user_addr = wrapper.create_user_account(&rust_zero);
@@ -1047,7 +1097,7 @@ fn execute_on_dest_context_change_state_test() {
     wrapper
         .execute_tx(&user_addr, &other_sc_wrapper, &rust_zero, |sc| {
             sc.total_value().set(&managed_biguint!(5));
-        })
+        })?
         .assert_ok();
 
     wrapper
@@ -1056,7 +1106,7 @@ fn execute_on_dest_context_change_state_test() {
                 managed_address!(&other_sc_wrapper.address_ref().clone()),
                 managed_biguint!(5),
             );
-        })
+        })?
         .assert_ok();
 
     wrapper
@@ -1065,12 +1115,14 @@ fn execute_on_dest_context_change_state_test() {
             let actual_result = sc.get_val();
 
             assert_eq!(expected_result, actual_result);
-        })
+        })?
         .assert_ok();
+    
+    Ok(())
 }
 
 #[test]
-fn test_mandos_generation() {
+fn test_mandos_generation() -> anyhow::Result<()> {
     let rust_zero = rust_biguint!(0);
     let mut wrapper = BlockchainStateWrapper::new();
     let user_addr = wrapper.create_user_account(&rust_zero);
@@ -1085,7 +1137,7 @@ fn test_mandos_generation() {
     wrapper
         .execute_tx(&user_addr, &sc_wrapper, &rust_zero, |sc| {
             sc.init();
-        })
+        })?
         .assert_ok();
     wrapper.add_mandos_set_account(sc_wrapper.address_ref());
     wrapper.add_mandos_check_account(sc_wrapper.address_ref());
@@ -1117,7 +1169,7 @@ fn test_mandos_generation() {
 
             assert_eq!(expected_total_after, actual_total_after);
             assert_eq!(expected_per_caller_after, actual_per_caller_after);
-        })
+        })?
         .assert_ok();
     wrapper.add_mandos_check_account(sc_wrapper.address_ref());
 
@@ -1139,14 +1191,16 @@ fn test_mandos_generation() {
 
             assert_eq!(expected_total, actual_total);
             assert_eq!(expected_per_caller, actual_per_caller);
-        })
+        })?
         .assert_ok();
 
     wrapper.write_mandos_output(TEST_OUTPUT_PATH);
+
+    Ok(())
 }
 
 #[test]
-fn test_multiple_contracts() {
+fn test_multiple_contracts() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let _sc_wrapper = wrapper.create_sc_account(
         &rust_biguint!(0u64),
@@ -1163,10 +1217,12 @@ fn test_multiple_contracts() {
     );
 
     wrapper.write_mandos_output(TEST_MULTIPLE_SC_OUTPUT_PATH);
+
+    Ok(())
 }
 
 #[test]
-fn test_async_call() {
+fn test_async_call() -> anyhow::Result<()> {
     let rust_zero = rust_biguint!(0);
     let mut wrapper = BlockchainStateWrapper::new();
     let user_addr = wrapper.create_user_account(&rust_zero);
@@ -1184,13 +1240,13 @@ fn test_async_call() {
         let value_to_add = managed_biguint!(10);
         sc.call_other_contract_add_async_call(adder_address, value_to_add);
     });
-    tx_result.assert_ok();
+    tx_result.unwrap().assert_ok();
 
     wrapper
         .execute_query(&sc_wrapper, |sc| {
             let callback_executed = sc.callback_executed().get();
             assert!(callback_executed);
-        })
+        })?
         .assert_ok();
 
     wrapper
@@ -1198,12 +1254,14 @@ fn test_async_call() {
             let current_sum = sc.sum().get();
             let expected_sum = BigUint::from(10u32);
             assert_eq!(current_sum, expected_sum);
-        })
+        })?
         .assert_ok();
+    
+    Ok(())
 }
 
 #[test]
-fn test_wrapper_getters() {
+fn test_wrapper_getters() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let egld_balance = rust_biguint!(1_000);
 
@@ -1239,13 +1297,17 @@ fn test_wrapper_getters() {
     assert_eq!(esdt_balance, actual_esdt_balance);
     assert_eq!(nft_balance, actual_nft_balance);
     assert_eq!(nft_attributes, actual_attributes);
+
+    Ok(())
 }
 
 #[test]
-fn fixed_address_account_creation_test() {
+fn fixed_address_account_creation_test() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     wrapper
         .create_user_account_fixed_address(&Address::from_slice(&[1u8; 32][..]), &rust_biguint!(0));
+
+    Ok(())
 }
 
 #[should_panic(
@@ -1267,7 +1329,7 @@ fn fixed_address_invalid_sc_test() {
 }
 
 #[test]
-fn managed_environment_test() {
+fn managed_environment_test() -> anyhow::Result<()> {
     let wrapper = BlockchainStateWrapper::new();
     wrapper.execute_in_managed_environment(|| {
         let _my_struct = StructWithManagedTypes::<DebugApi> {
@@ -1275,10 +1337,12 @@ fn managed_environment_test() {
             buffer: managed_buffer!(b"MyBuffer"),
         };
     });
+
+    Ok(())
 }
 
 #[test]
-fn managed_environment_consistency_test() {
+fn managed_environment_consistency_test() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let adder_wrapper = wrapper.create_sc_account(
         &rust_biguint!(0),
@@ -1294,15 +1358,17 @@ fn managed_environment_consistency_test() {
             let third_var = BigUint::from(3u32);
             let sum = first_var + second_var;
             assert_eq!(sum, third_var);
-        })
+        })?
         .assert_error(
             err_msg::DEBUG_API_ERR_STATUS,
             err_msg::DEBUG_API_ERR_HANDLE_CONTEXT_MISMATCH,
         );
+
+    Ok(())
 }
 
 #[test]
-fn test_managed_values_standalone_consistency() {
+fn test_managed_values_standalone_consistency() -> anyhow::Result<()> {
     DebugApi::dummy();
 
     let mut blockchain_wrapper = BlockchainStateWrapper::new();
@@ -1324,15 +1390,17 @@ fn test_managed_values_standalone_consistency() {
                 foo_token,
                 TokenIdentifier::<DebugApi>::from_esdt_bytes(b"FOO-a1a1a1")
             );
-        })
+        })?
         .assert_error(
             err_msg::DEBUG_API_ERR_STATUS,
             err_msg::DEBUG_API_ERR_HANDLE_CONTEXT_MISMATCH,
         );
+
+    Ok(())
 }
 
 #[test]
-fn test_managed_values_argument_and_return_value_consistency() {
+fn test_managed_values_argument_and_return_value_consistency() -> anyhow::Result<()> {
     DebugApi::dummy();
 
     let mut blockchain_wrapper = BlockchainStateWrapper::new();
@@ -1361,15 +1429,17 @@ fn test_managed_values_argument_and_return_value_consistency() {
                 result = sc.endpoint_with_mutable_arg(argument, 3, 4);
                 assert_eq!(result.to_u64().unwrap(), 49);
             },
-        )
+        )?
         .assert_error(
             err_msg::DEBUG_API_ERR_STATUS,
             err_msg::DEBUG_API_ERR_HANDLE_CONTEXT_MISMATCH,
         );
+
+    Ok(())
 }
 
 #[test]
-fn test_managed_values_insert_handle_panics() {
+fn test_managed_values_insert_handle_panics() -> anyhow::Result<()> {
     DebugApi::dummy();
 
     let mut blockchain_wrapper = BlockchainStateWrapper::new();
@@ -1393,8 +1463,10 @@ fn test_managed_values_insert_handle_panics() {
                 // this should panic because we're pushing the handle's value, which discards the context
                 vec.push(item);
             },
-        )
+        )?
         .assert_user_error("panic occurred");
+
+    Ok(())
 }
 
 #[should_panic]
@@ -1407,7 +1479,7 @@ fn test_managed_types_without_environment() {
 }
 
 #[test]
-fn test_random_buffer() {
+fn test_random_buffer() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let sc_wrapper = wrapper.create_sc_account(
         &rust_biguint!(0),
@@ -1421,12 +1493,14 @@ fn test_random_buffer() {
             let rand_buffer = sc.get_random_buffer_once(2);
             let expected_buffer = managed_buffer!(&[0x8b, 0xdd]);
             assert_eq!(rand_buffer, expected_buffer);
-        })
+        })?
         .assert_ok();
+    
+    Ok(())
 }
 
 #[test]
-fn test_random_buffer_twice() {
+fn test_random_buffer_twice() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let sc_wrapper = wrapper.create_sc_account(
         &rust_biguint!(0),
@@ -1444,12 +1518,14 @@ fn test_random_buffer_twice() {
 
             assert_eq!(rand_buffer_1, expected_buffer_1);
             assert_eq!(rand_buffer_2, expected_buffer_2);
-        })
+        })?
         .assert_ok();
+    
+    Ok(())
 }
 
 #[test]
-fn test_modules() {
+fn test_modules() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let sc_wrapper = wrapper.create_sc_account(
         &rust_biguint!(0),
@@ -1461,12 +1537,14 @@ fn test_modules() {
     wrapper
         .execute_query(&sc_wrapper, |sc| {
             let _ = sc.some_function();
-        })
+        })?
         .assert_ok();
+    
+    Ok(())
 }
 
 #[test]
-fn test_back_and_forth_transfers() {
+fn test_back_and_forth_transfers() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let user = wrapper.create_user_account(&rust_biguint!(0));
     let first_token_id = b"FIRSTTOKEN-abcdef";
@@ -1519,7 +1597,7 @@ fn test_back_and_forth_transfers() {
                 managed_token_id!(&third_token_id[..]),
                 managed_biguint!(third_token_amount.to_u64().unwrap()),
             );
-        })
+        })?
         .assert_ok();
 
     wrapper.check_esdt_balance(
@@ -1527,10 +1605,12 @@ fn test_back_and_forth_transfers() {
         &third_token_id[..],
         &third_token_amount,
     );
+
+    Ok(())
 }
 
 #[test]
-fn dump_state_single_test() {
+fn dump_state_single_test() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let sc_wrapper = wrapper.create_sc_account(
         &rust_biguint!(0),
@@ -1571,10 +1651,12 @@ fn dump_state_single_test() {
     );
 
     wrapper.dump_state_for_account::<NftDummyAttributes>(sc_wrapper.address_ref());
+
+    Ok(())
 }
 
 #[test]
-fn dump_state_raw_attributes_test() {
+fn dump_state_raw_attributes_test() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let sc_wrapper = wrapper.create_sc_account(
         &rust_biguint!(0),
@@ -1615,10 +1697,12 @@ fn dump_state_raw_attributes_test() {
     );
 
     wrapper.dump_state_for_account_hex_attributes(sc_wrapper.address_ref());
+
+    Ok(())
 }
 
 #[test]
-fn dump_state_all_test() {
+fn dump_state_all_test() -> anyhow::Result<()> {
     let mut wrapper = BlockchainStateWrapper::new();
     let user_addr = wrapper.create_user_account(&rust_biguint!(333));
     let sc_wrapper = wrapper.create_sc_account(
@@ -1665,10 +1749,12 @@ fn dump_state_all_test() {
             sc.value_per_caller(&managed_address!(&user_addr))
                 .set(&managed_biguint!(2_000_000));
             sc.callback_executed().set(true);
-        })
+        })?
         .assert_ok();
 
     wrapper.dump_state();
+
+    Ok(())
 }
 
 fn uris_to_vec(uris: &[&[u8]]) -> Vec<Vec<u8>> {

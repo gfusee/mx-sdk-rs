@@ -9,6 +9,8 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn empty_rs() {
-    world().run("scenarios/empty.scen.json");
+fn empty_rs() -> anyhow::Result<()> {
+    world().run("scenarios/empty.scen.json")?;
+
+    Ok(())
 }

@@ -1,23 +1,33 @@
 use multiversx_sc_scenario::*;
 
 fn world() -> ScenarioWorld {
-    todo!()
+    let mut blockchain = ScenarioWorld::new();
+    blockchain.set_current_dir_from_workspace("contracts/examples/nft-subscription");
+
+    blockchain.register_contract(
+        "file:output/nft-subscription.wasm",
+        nft_subscription::ContractBuilder,
+    );
+    blockchain
 }
 
 #[test]
-#[ignore = "not supported"]
-fn test_subscription_rs() {
-    world().run("scenarios/test_subscription.scen.json");
+fn init_rs() -> anyhow::Result<()> {
+    world().run("scenarios/init.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-#[ignore = "not supported"]
-fn mint_nft_rs() {
-    world().run("scenarios/mint_nft.scen.json");
+fn mint_nft_rs() -> anyhow::Result<()> {
+    world().run("scenarios/mint_nft.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-#[ignore = "not supported"]
-fn init_rs() {
-    world().run("scenarios/init.scen.json");
+fn test_subscription_rs() -> anyhow::Result<()> {
+    world().run("scenarios/test_subscription.scen.json")?;
+
+    Ok(())
 }

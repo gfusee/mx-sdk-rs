@@ -23,12 +23,14 @@ fn setup() -> ScenarioWorld {
                 .put_account("address:owner", Account::new().nonce(1))
                 .new_address("address:owner", 1, "sc:llr"),
         )
+        .unwrap()
         .sc_deploy(
             ScDeployStep::new()
                 .from("address:owner")
                 .code(llr_code)
                 .expect(TxExpect::ok().no_result()),
-        );
+        )
+        .unwrap();
     world
 }
 
@@ -47,6 +49,7 @@ fn linked_list_repeat_blackbox_raw() {
                 .call(contract.add(num_repeats, "test--"))
                 .expect(TxExpect::ok().no_result()),
         )
+        .unwrap()
         .sc_call(
             ScCallStep::new()
                 .from("address:owner")
@@ -54,6 +57,7 @@ fn linked_list_repeat_blackbox_raw() {
                 .call(contract.count("test--\x00\x00\x00\x04"))
                 .expect(TxExpect::ok().result("1")),
         )
+        .unwrap()
         .sc_query_use_result(
             ScQueryStep::new().to("sc:llr").call(contract.bench()),
             |tr: TypedResponse<MultiValueEncoded<StaticApi, String>>| {
@@ -66,7 +70,8 @@ fn linked_list_repeat_blackbox_raw() {
                     assert_eq!(item, &expected);
                 }
             },
-        );
+        )
+        .unwrap();
 }
 
 #[test]

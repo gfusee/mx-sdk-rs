@@ -76,7 +76,7 @@ fn world() -> ScenarioWorld {
     blockchain
 }
 
-fn setup() -> ScenarioWorld {
+fn setup() -> anyhow::Result<ScenarioWorld> {
     // setup
     let mut world = world();
     let multisig_whitebox = WhiteboxContract::new(MULTISIG_ADDRESS_EXPR, multisig::contract_obj);
@@ -91,7 +91,7 @@ fn setup() -> ScenarioWorld {
                 Account::new().nonce(1).balance(100_000_000u64),
             )
             .put_account(BOARD_MEMBER_ADDRESS_EXPR, Account::new().nonce(1)),
-    );
+    )?;
 
     // init multisig
     world.whitebox_deploy(
@@ -112,14 +112,16 @@ fn setup() -> ScenarioWorld {
                 UserRole::Proposer,
             );
         },
-    );
+    )?;
 
-    world
+    Ok(world)
 }
 
 #[test]
-fn test_init() {
-    setup();
+fn test_init() -> anyhow::Result<()> {
+    setup()?;
+    
+    Ok(())
 }
 
 fn call_propose(
@@ -208,8 +210,8 @@ fn call_propose(
 }
 
 #[test]
-fn test_add_board_member() {
-    let mut world = setup();
+fn test_add_board_member() -> anyhow::Result<()> {
+    let mut world = setup()?;
     let multisig_whitebox = WhiteboxContract::new(MULTISIG_ADDRESS_EXPR, multisig::contract_obj);
 
     const NEW_BOARD_MEMBER_ADDRESS_EXPR: &str = "address:new-board-member";
@@ -235,7 +237,7 @@ fn test_add_board_member() {
         &multisig_whitebox,
         ScCallStep::new().from(BOARD_MEMBER_ADDRESS_EXPR),
         |sc| sc.sign(action_id),
-    );
+    )?;
 
     world.whitebox_call(
         &multisig_whitebox,
@@ -243,7 +245,7 @@ fn test_add_board_member() {
         |sc| {
             let _ = sc.perform_action_endpoint(action_id);
         },
-    );
+    )?;
 
     world.whitebox_query(&multisig_whitebox, |sc| {
         // check role after
@@ -261,12 +263,14 @@ fn test_add_board_member() {
             (board_members.get(1).borrow() as &ManagedAddress<DebugApi>).clone(),
             managed_address!(&address_expr_to_address(NEW_BOARD_MEMBER_ADDRESS_EXPR))
         );
-    });
+    })?;
+
+    Ok(())
 }
 
 #[test]
-fn test_add_proposer() {
-    let mut world = setup();
+fn test_add_proposer() -> anyhow::Result<()> {
+    let mut world = setup()?;
     let multisig_whitebox = WhiteboxContract::new(MULTISIG_ADDRESS_EXPR, multisig::contract_obj);
 
     const NEW_PROPOSER_ADDRESS_EXPR: &str = "address:new-proposer";
@@ -318,12 +322,14 @@ fn test_add_proposer() {
             (proposers.get(1).borrow() as &ManagedAddress<DebugApi>).clone(),
             managed_address!(&address_expr_to_address(NEW_PROPOSER_ADDRESS_EXPR))
         );
-    });
+    })?;
+
+    Ok(())
 }
 
 #[test]
-fn test_remove_proposer() {
-    let mut world = setup();
+fn test_remove_proposer() -> anyhow::Result<()> {
+    let mut world = setup()?;
     let multisig_whitebox = WhiteboxContract::new(MULTISIG_ADDRESS_EXPR, multisig::contract_obj);
 
     world.whitebox_query(&multisig_whitebox, |sc| {
@@ -363,12 +369,14 @@ fn test_remove_proposer() {
 
         let proposers = sc.get_all_proposers().to_vec();
         assert!(proposers.is_empty());
-    });
+    })?;
+
+    Ok(())
 }
 
 #[test]
-fn test_try_remove_all_board_members() {
-    let mut world = setup();
+fn test_try_remove_all_board_members() -> anyhow::Result<()> {
+    let mut world = setup()?;
     let multisig_whitebox = WhiteboxContract::new(MULTISIG_ADDRESS_EXPR, multisig::contract_obj);
 
     let action_id = call_propose(
@@ -394,12 +402,14 @@ fn test_try_remove_all_board_members() {
         |r| {
             r.assert_user_error("quorum cannot exceed board size");
         },
-    );
+    )?;
+
+    Ok(())
 }
 
 #[test]
-fn test_change_quorum() {
-    let mut world = setup();
+fn test_change_quorum() -> anyhow::Result<()> {
+    let mut world = setup()?;
     let multisig_whitebox = WhiteboxContract::new(MULTISIG_ADDRESS_EXPR, multisig::contract_obj);
 
     let new_quorum_size = 2;
@@ -510,12 +520,14 @@ fn test_change_quorum() {
         |sc| {
             let _ = sc.perform_action_endpoint(action_id);
         },
-    );
+    )?;
+
+    Ok(())
 }
 
 #[test]
-fn test_transfer_execute_to_user() {
-    let mut world = setup();
+fn test_transfer_execute_to_user() -> anyhow::Result<()> {
+    let mut world = setup()?;
     let multisig_whitebox = WhiteboxContract::new(MULTISIG_ADDRESS_EXPR, multisig::contract_obj);
 
     const NEW_USER_ADDRESS_EXPR: &str = "address:new-user";
@@ -581,12 +593,14 @@ fn test_transfer_execute_to_user() {
     world.check_state_step(CheckStateStep::new().put_account(
         NEW_USER_ADDRESS_EXPR,
         CheckAccount::new().balance(EGLD_AMOUNT.to_string().as_str()),
-    ));
+    ))?;
+
+    Ok(())
 }
 
 #[test]
-fn test_transfer_execute_sc_all() {
-    let mut world = setup();
+fn test_transfer_execute_sc_all() -> anyhow::Result<()> {
+    let mut world = setup()?;
     let multisig_whitebox = WhiteboxContract::new(MULTISIG_ADDRESS_EXPR, multisig::contract_obj);
 
     let adder_whitebox = WhiteboxContract::new(ADDER_ADDRESS_EXPR, adder::contract_obj);
@@ -642,12 +656,14 @@ fn test_transfer_execute_sc_all() {
         let actual_sum = sc.sum().get();
         let expected_sum = managed_biguint!(10);
         assert_eq!(actual_sum, expected_sum);
-    });
+    })?;
+
+    Ok(())
 }
 
 #[test]
-fn test_async_call_to_sc() {
-    let mut world = setup();
+fn test_async_call_to_sc() -> anyhow::Result<()> {
+    let mut world = setup()?;
     let multisig_whitebox = WhiteboxContract::new(MULTISIG_ADDRESS_EXPR, multisig::contract_obj);
 
     let adder_whitebox = WhiteboxContract::new(ADDER_ADDRESS_EXPR, adder::contract_obj);
@@ -703,12 +719,14 @@ fn test_async_call_to_sc() {
         let actual_sum = sc.sum().get();
         let expected_sum = managed_biguint!(10);
         assert_eq!(actual_sum, expected_sum);
-    });
+    })?;
+
+    Ok(())
 }
 
 #[test]
-fn test_deploy_and_upgrade_from_source() {
-    let mut world = setup();
+fn test_deploy_and_upgrade_from_source() -> anyhow::Result<()> {
+    let mut world = setup()?;
     let multisig_whitebox = WhiteboxContract::new(MULTISIG_ADDRESS_EXPR, multisig::contract_obj);
 
     let adder_whitebox = WhiteboxContract::new(ADDER_ADDRESS_EXPR, adder::contract_obj);
@@ -839,7 +857,9 @@ fn test_deploy_and_upgrade_from_source() {
     world.check_state_step(
         CheckStateStep::new()
             .put_account(ADDER_ADDRESS_EXPR, CheckAccount::new().code(factorial_code)),
-    );
+    )?;
+
+    Ok(())
 }
 
 fn address_expr_to_address(address_expr: &str) -> Address {

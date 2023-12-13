@@ -53,15 +53,25 @@ impl TxCache {
 
     pub fn with_account<R, F>(&self, address: &VMAddress, f: F) -> anyhow::Result<R>
     where
-        F: FnOnce(&AccountData) -> R,
+        F: FnOnce(&AccountData) -> anyhow::Result<R>,
     {
-        self.load_account_if_necessary(address)?;
-        let accounts = self.accounts.lock().unwrap();
-        let Some(account) = accounts.get(address) else {
+        self.with_account_or_else(address, f, || -> anyhow::Result<R> {
             bail!("Account {} not found", address_hex(address))
-        };
+        })
+    }
 
-        Ok(f(account))
+    pub fn with_account_or_else<R, F, Else>(&self, address: &VMAddress, f: F, or_else: Else) -> R
+    where
+        F: FnOnce(&AccountData) -> R,
+        Else: FnOnce() -> R,
+    {
+        self.load_account_if_necessary(address);
+        let accounts = self.accounts.lock().unwrap();
+        if let Some(account) = accounts.get(address) {
+            f(account)
+        } else {
+            or_else()
+        }
     }
 
     pub fn with_account_mut<R, F>(&self, address: &VMAddress, f: F) -> anyhow::Result<R>
@@ -92,7 +102,7 @@ impl TxCache {
 
     /// Assumes the nonce has already been increased.
     pub fn get_new_address(&self, creator_address: &VMAddress) -> anyhow::Result<VMAddress> {
-        let current_nonce = self.with_account(creator_address, |account| account.nonce)?;
+        let current_nonce = self.with_account(creator_address, |account| Ok(account.nonce))?;
         Ok(
             self.blockchain_ref()
                 .get_new_address(creator_address.clone(), current_nonce - 1)

@@ -101,7 +101,8 @@ impl MultisigTestState {
                 self.multisig_contract
                     .propose_add_proposer(self.proposer_address.clone()),
             ),
-        );
+        )
+            .unwrap();
         self.sign(action_id);
         self.perform(action_id);
 
@@ -130,6 +131,7 @@ impl MultisigTestState {
                     .propose_add_board_member(board_member_address),
             ),
         )
+            .unwrap()
     }
 
     fn propose_add_proposer(&mut self, proposer_address: Address) -> usize {
@@ -139,6 +141,7 @@ impl MultisigTestState {
                     .propose_add_proposer(proposer_address),
             ),
         )
+            .unwrap()
     }
 
     fn propose_change_quorum(&mut self, new_quorum: usize) -> usize {
@@ -147,6 +150,7 @@ impl MultisigTestState {
                 .from(PROPOSER_ADDRESS_EXPR)
                 .call(self.multisig_contract.propose_change_quorum(new_quorum)),
         )
+            .unwrap()
     }
 
     fn propose_transfer_execute(
@@ -163,6 +167,7 @@ impl MultisigTestState {
                     contract_call.into_function_call(),
                 ),
             ))
+            .unwrap()
     }
 
     fn propose_async_call(
@@ -179,6 +184,7 @@ impl MultisigTestState {
                     contract_call.into_function_call(),
                 ),
             ))
+            .unwrap()
     }
 
     fn propose_remove_user(&mut self, user_address: Address) -> usize {
@@ -187,6 +193,7 @@ impl MultisigTestState {
                 .from(PROPOSER_ADDRESS_EXPR)
                 .call(self.multisig_contract.propose_remove_user(user_address)),
         )
+            .unwrap()
     }
 
     fn propose_sc_deploy_from_source(
@@ -205,6 +212,7 @@ impl MultisigTestState {
                     arguments,
                 ),
             ))
+            .unwrap()
     }
 
     fn propose_sc_upgrade_from_source(
@@ -225,6 +233,7 @@ impl MultisigTestState {
                     arguments,
                 ),
             ))
+            .unwrap()
     }
 
     fn perform(&mut self, action_id: usize) {
@@ -262,7 +271,7 @@ impl MultisigTestState {
 }
 
 #[test]
-fn test_add_board_member() {
+fn test_add_board_member() -> anyhow::Result<()> {
     let mut state = MultisigTestState::new();
     state.deploy_multisig_contract();
 
@@ -271,7 +280,7 @@ fn test_add_board_member() {
 
     state.world.set_state_step(
         SetStateStep::new().put_account(NEW_BOARD_MEMBER_ADDRESS_EXPR, Account::new().nonce(1)),
-    );
+    )?;
 
     state.expect_user_role(&new_board_member_address, UserRole::None);
 
@@ -287,11 +296,13 @@ fn test_add_board_member() {
                 state.board_member_address.clone(),
                 new_board_member_address.clone(),
             ])),
-    );
+    )?;
+
+    Ok(())
 }
 
 #[test]
-fn test_add_proposer() {
+fn test_add_proposer() -> anyhow::Result<()> {
     let mut state = MultisigTestState::new();
     state.deploy_multisig_contract();
 
@@ -300,7 +311,7 @@ fn test_add_proposer() {
 
     state.world.set_state_step(
         SetStateStep::new().put_account(NEW_PROPOSER_ADDRESS_EXPR, Account::new().nonce(1)),
-    );
+    )?;
 
     state.expect_user_role(&new_proposer_address, UserRole::None);
 
@@ -316,11 +327,13 @@ fn test_add_proposer() {
                 state.proposer_address.clone(),
                 new_proposer_address.clone(),
             ])),
-    );
+    )?;
+
+    Ok(())
 }
 
 #[test]
-fn test_remove_proposer() {
+fn test_remove_proposer() -> anyhow::Result<()> {
     let mut state = MultisigTestState::new();
     state.deploy_multisig_contract();
 
@@ -335,21 +348,25 @@ fn test_remove_proposer() {
         ScQueryStep::new()
             .call(state.multisig_contract.get_all_proposers())
             .expect_value(MultiValueVec::<Address>::new()),
-    );
+    )?;
+
+    Ok(())
 }
 
 #[test]
-fn test_try_remove_all_board_members() {
+fn test_try_remove_all_board_members() -> anyhow::Result<()> {
     let mut state = MultisigTestState::new();
     state.deploy_multisig_contract();
 
     let action_id = state.propose_remove_user(state.board_member_address.clone());
     state.sign(action_id);
-    state.perform_and_expect_err(action_id, "quorum cannot exceed board size")
+    state.perform_and_expect_err(action_id, "quorum cannot exceed board size");
+
+    Ok(())
 }
 
 #[test]
-fn test_change_quorum() {
+fn test_change_quorum() -> anyhow::Result<()> {
     let mut state = MultisigTestState::new();
     state.deploy_multisig_contract();
 
@@ -406,10 +423,12 @@ fn test_change_quorum() {
     let action_id = state.propose_change_quorum(new_quorum);
     state.sign(action_id);
     state.perform(action_id);
+
+    Ok(())
 }
 
 #[test]
-fn test_transfer_execute_to_user() {
+fn test_transfer_execute_to_user() -> anyhow::Result<()> {
     let mut state = MultisigTestState::new();
     state.deploy_multisig_contract();
 
@@ -456,18 +475,21 @@ fn test_transfer_execute_to_user() {
                     AMOUNT.parse::<u64>().unwrap(),
                     FunctionCall::empty(),
                 ),
-            ));
+            ))
+            .unwrap();
     state.sign(action_id);
     state.perform(action_id);
 
     state.world.check_state_step(
         CheckStateStep::new()
             .put_account(NEW_USER_ADDRESS_EXPR, CheckAccount::new().balance(AMOUNT)),
-    );
+    )?;
+
+    Ok(())
 }
 
 #[test]
-fn test_transfer_execute_sc_all() {
+fn test_transfer_execute_sc_all() -> anyhow::Result<()> {
     let mut state = MultisigTestState::new();
     state.deploy_multisig_contract().deploy_adder_contract();
 
@@ -481,11 +503,13 @@ fn test_transfer_execute_sc_all() {
         ScQueryStep::new()
             .call(state.adder_contract.sum())
             .expect_value(SingleValue::from(BigUint::from(10u64))),
-    );
+    )?;
+
+    Ok(())
 }
 
 #[test]
-fn test_async_call_to_sc() {
+fn test_async_call_to_sc() -> anyhow::Result<()> {
     let mut state = MultisigTestState::new();
     state.deploy_multisig_contract().deploy_adder_contract();
 
@@ -499,11 +523,13 @@ fn test_async_call_to_sc() {
         ScQueryStep::new()
             .call(state.adder_contract.sum())
             .expect_value(SingleValue::from(BigUint::from(10u64))),
-    );
+    )?;
+
+    Ok(())
 }
 
 #[test]
-fn test_deploy_and_upgrade_from_source() {
+fn test_deploy_and_upgrade_from_source() -> anyhow::Result<()> {
     let mut state = MultisigTestState::new();
     state.deploy_multisig_contract().deploy_adder_contract();
 
@@ -556,7 +582,7 @@ fn test_deploy_and_upgrade_from_source() {
     state.world.set_state_step(SetStateStep::new().put_account(
         FACTORIAL_ADDRESS_EXPR,
         Account::new().nonce(1).code(factorial_code.clone()),
-    ));
+    ))?;
 
     let action_id = state.propose_sc_upgrade_from_source(
         state.adder_address.clone(),
@@ -571,5 +597,7 @@ fn test_deploy_and_upgrade_from_source() {
     state.world.check_state_step(
         CheckStateStep::new()
             .put_account(ADDER_ADDRESS_EXPR, CheckAccount::new().code(factorial_code)),
-    );
+    )?;
+
+    Ok(())
 }

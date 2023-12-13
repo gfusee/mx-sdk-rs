@@ -1,10 +1,12 @@
 use multiversx_price_aggregator_sc::{
     price_aggregator_data::{OracleStatus, TimestampedPrice, TokenPair},
-    staking::EndpointWrappers as StakingEndpointWrappers,
     PriceAggregator, MAX_ROUND_DURATION_SECONDS,
 };
 use multiversx_sc::types::{EgldOrEsdtTokenIdentifier, MultiValueEncoded};
-use multiversx_sc_modules::pause::EndpointWrappers as PauseEndpointWrappers;
+use multiversx_sc_modules::{
+    pause::EndpointWrappers as PauseEndpointWrappers,
+    staking::EndpointWrappers as StakingEndpointWrappers,
+};
 use multiversx_sc_scenario::{
     managed_address, managed_biguint, managed_buffer, scenario_model::*, WhiteboxContract, *,
 };
@@ -13,7 +15,7 @@ pub const DECIMALS: u8 = 0;
 pub const EGLD_TICKER: &[u8] = b"EGLD";
 pub const NR_ORACLES: usize = 4;
 pub const SLASH_AMOUNT: u64 = 10;
-pub const SLASH_QUORUM: usize = 2;
+pub const SLASH_QUORUM: usize = 3;
 pub const STAKE_AMOUNT: u64 = 20;
 pub const SUBMISSION_COUNT: usize = 3;
 pub const USD_TICKER: &[u8] = b"USDC";
@@ -394,6 +396,14 @@ fn test_price_aggregator_slashing() {
     world.whitebox_call(
         &price_aggregator_whitebox,
         ScCallStep::new()
+            .from(&oracles[3])
+            .argument(BytesValue::from(oracles[1].to_address().as_bytes())),
+        |sc| sc.call_vote_slash_member(),
+    );
+
+    world.whitebox_call(
+        &price_aggregator_whitebox,
+        ScCallStep::new()
             .from(&oracles[0])
             .argument(BytesValue::from(oracles[1].to_address().as_bytes())),
         |sc| sc.call_slash_member(),
@@ -445,27 +455,30 @@ fn setup() -> (ScenarioWorld, Vec<AddressValue>) {
     }
 
     // init price aggregator
-    world.set_state_step(set_state_step).whitebox_deploy(
-        &price_aggregator_whitebox,
-        ScDeployStep::new()
-            .from(OWNER_ADDRESS_EXPR)
-            .code(price_aggregator_code),
-        |sc| {
-            let mut oracle_args = MultiValueEncoded::new();
-            for oracle_address in &oracles {
-                oracle_args.push(managed_address!(&oracle_address.to_address()));
-            }
+    world.set_state_step(set_state_step)
+        .unwrap()
+        .whitebox_deploy(
+            &price_aggregator_whitebox,
+            ScDeployStep::new()
+                .from(OWNER_ADDRESS_EXPR)
+                .code(price_aggregator_code),
+            |sc| {
+                let mut oracle_args = MultiValueEncoded::new();
+                for oracle_address in &oracles {
+                    oracle_args.push(managed_address!(&oracle_address.to_address()));
+                }
 
-            sc.init(
-                EgldOrEsdtTokenIdentifier::egld(),
-                managed_biguint!(STAKE_AMOUNT),
-                managed_biguint!(SLASH_AMOUNT),
-                SLASH_QUORUM,
-                SUBMISSION_COUNT,
-                oracle_args,
-            )
-        },
-    );
+                sc.init(
+                    EgldOrEsdtTokenIdentifier::egld(),
+                    managed_biguint!(STAKE_AMOUNT),
+                    managed_biguint!(SLASH_AMOUNT),
+                    SLASH_QUORUM,
+                    SUBMISSION_COUNT,
+                    oracle_args,
+                )
+            },
+        )
+        .unwrap();
 
     for oracle_address in &oracles {
         world.whitebox_call(

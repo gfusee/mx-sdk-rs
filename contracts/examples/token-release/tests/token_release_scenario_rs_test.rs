@@ -12,31 +12,43 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn test_add_group_rs() {
-    world().run("scenarios/test-add-group.scen.json");
+fn test_add_group_rs() -> anyhow::Result<()> {
+    world().run("scenarios/test-add-group.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn test_add_user_rs() {
-    world().run("scenarios/test-add-user.scen.json");
+fn test_add_user_rs() -> anyhow::Result<()> {
+    world().run("scenarios/test-add-user.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn test_change_user_rs() {
-    world().run("scenarios/test-change-user.scen.json");
+fn test_change_user_rs() -> anyhow::Result<()> {
+    world().run("scenarios/test-change-user.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn test_claim_rs() {
-    world().run("scenarios/test-claim.scen.json");
+fn test_claim_rs() -> anyhow::Result<()> {
+    world().run("scenarios/test-claim.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn test_end_setup_rs() {
-    world().run("scenarios/test-end-setup.scen.json");
+fn test_end_setup_rs() -> anyhow::Result<()> {
+    world().run("scenarios/test-end-setup.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn test_init_rs() {
-    world().run("scenarios/test-init.scen.json");
+fn test_init_rs() -> anyhow::Result<()> {
+    world().run("scenarios/test-init.scen.json")?;
+
+    Ok(())
 }

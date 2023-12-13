@@ -11,7 +11,7 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn adder_blackbox_raw() {
+fn adder_blackbox_raw() -> anyhow::Result<()> {
     let mut world = world();
     let adder_code = world.code_expression(ADDER_PATH_EXPR);
 
@@ -20,20 +20,20 @@ fn adder_blackbox_raw() {
             SetStateStep::new()
                 .put_account("address:owner", Account::new().nonce(1))
                 .new_address("address:owner", 1, "sc:adder"),
-        )
+        )?
         .sc_deploy(
             ScDeployStep::new()
                 .from("address:owner")
                 .code(adder_code)
                 .argument("5")
                 .expect(TxExpect::ok().no_result()),
-        )
+        )?
         .sc_query(
             ScQueryStep::new()
                 .to("sc:adder")
                 .function("getSum")
                 .expect(TxExpect::ok().result("5")),
-        )
+        )?
         .sc_call(
             ScCallStep::new()
                 .from("address:owner")
@@ -41,7 +41,7 @@ fn adder_blackbox_raw() {
                 .function("add")
                 .argument("3")
                 .expect(TxExpect::ok().no_result()),
-        )
+        )?
         .check_state_step(
             CheckStateStep::new()
                 .put_account("address:owner", CheckAccount::new())
@@ -49,5 +49,7 @@ fn adder_blackbox_raw() {
                     "sc:adder",
                     CheckAccount::new().check_storage("str:sum", "8"),
                 ),
-        );
+        )?;
+    
+    Ok(())
 }

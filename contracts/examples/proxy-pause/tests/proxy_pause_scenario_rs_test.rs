@@ -14,11 +14,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn init_rs() {
-    world().run("scenarios/init.scen.json");
+fn init_rs() -> anyhow::Result<()> {
+    world().run("scenarios/init.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn pause_and_unpause_rs() {
-    world().run("scenarios/pause-and-unpause.scen.json");
+fn pause_and_unpause_rs() -> anyhow::Result<()> {
+    world().run("scenarios/pause-and-unpause.scen.json")?;
+
+    Ok(())
 }

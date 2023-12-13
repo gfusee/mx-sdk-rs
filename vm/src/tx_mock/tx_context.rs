@@ -90,14 +90,22 @@ impl TxContext {
 
     pub fn with_account<R, F>(&self, address: &VMAddress, f: F) -> anyhow::Result<R>
     where
-        F: FnOnce(&AccountData) -> R,
+        F: FnOnce(&AccountData) -> anyhow::Result<R>,
     {
         self.tx_cache.with_account(address, f)
     }
 
-    pub fn with_contract_account<R, F>(&self, f: F) -> anyhow::Result<R>
+    pub fn with_account_or_else<R, F, Else>(&self, address: &VMAddress, f: F, or_else: Else) -> R
     where
         F: FnOnce(&AccountData) -> R,
+        Else: FnOnce() -> R,
+    {
+        self.tx_cache.with_account_or_else(address, f, or_else)
+    }
+
+    pub fn with_contract_account<R, F>(&self, f: F) -> anyhow::Result<R>
+    where
+        F: FnOnce(&AccountData) -> anyhow::Result<R>,
     {
         self.with_account(&self.tx_input_box.to, f)
     }

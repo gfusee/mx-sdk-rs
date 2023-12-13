@@ -147,33 +147,37 @@ impl CrowdfundingESDTTestState {
         self
     }
 
-    fn set_block_timestamp(&mut self, block_timestamp_expr: u64) -> &mut Self {
+    fn set_block_timestamp(&mut self, block_timestamp_expr: u64) -> anyhow::Result<&mut Self> {
         self.world
-            .set_state_step(SetStateStep::new().block_timestamp(block_timestamp_expr));
+            .set_state_step(SetStateStep::new().block_timestamp(block_timestamp_expr))?;
 
-        self
+        Ok(self)
     }
 }
 
 #[test]
-fn test_fund() {
+fn test_fund() -> anyhow::Result<()> {
     let mut state = CrowdfundingESDTTestState::new();
     state.deploy();
 
     state.fund(FIRST_USER_ADDRESS_EXPR, "1000");
     state.check_deposit(state.first_user_address.clone(), 1_000);
+
+    Ok(())
 }
 
 #[test]
-fn test_status() {
+fn test_status() -> anyhow::Result<()> {
     let mut state = CrowdfundingESDTTestState::new();
     state.deploy();
 
     state.check_status(Status::FundingPeriod);
+
+    Ok(())
 }
 
 #[test]
-fn test_sc_error() {
+fn test_sc_error() -> anyhow::Result<()> {
     let mut state = CrowdfundingESDTTestState::new();
     state.deploy();
 
@@ -183,7 +187,7 @@ fn test_sc_error() {
             .egld_value("1_000")
             .call(state.crowdfunding_esdt_contract.fund())
             .expect(TxExpect::user_error("str:wrong token")),
-    );
+    )?;
     state.world.sc_query(
         ScQueryStep::new()
             .call(
@@ -192,11 +196,13 @@ fn test_sc_error() {
                     .deposit(&state.first_user_address),
             )
             .expect(TxExpect::ok().result("0x")),
-    );
+    )?;
+
+    Ok(())
 }
 
 #[test]
-fn test_successful_cf() {
+fn test_successful_cf() -> anyhow::Result<()> {
     let mut state = CrowdfundingESDTTestState::new();
     state.deploy();
 
@@ -222,7 +228,7 @@ fn test_successful_cf() {
             .expect(TxExpect::user_error(
                 "str:only owner can claim successful funding",
             )),
-    );
+    )?;
 
     // owner claim
     state.claim(OWNER_ADDRESS_EXPR);
@@ -230,10 +236,12 @@ fn test_successful_cf() {
     state.check_esdt_balance(OWNER_ADDRESS_EXPR, "2_000");
     state.check_esdt_balance(FIRST_USER_ADDRESS_EXPR, "0");
     state.check_esdt_balance(SECOND_USER_ADDRESS_EXPR, "0");
+
+    Ok(())
 }
 
 #[test]
-fn test_failed_cf() {
+fn test_failed_cf() -> anyhow::Result<()> {
     let mut state = CrowdfundingESDTTestState::new();
     state.deploy();
 
@@ -260,4 +268,6 @@ fn test_failed_cf() {
     state.check_esdt_balance(OWNER_ADDRESS_EXPR, "0");
     state.check_esdt_balance(FIRST_USER_ADDRESS_EXPR, "1_000");
     state.check_esdt_balance(SECOND_USER_ADDRESS_EXPR, "1_000");
+
+    Ok(())
 }

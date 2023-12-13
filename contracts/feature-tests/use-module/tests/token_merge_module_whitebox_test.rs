@@ -52,7 +52,7 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn test_token_merge() {
+fn test_token_merge() -> anyhow::Result<()> {
     let mut world = world();
 
     let use_module_whitebox =
@@ -431,16 +431,18 @@ fn test_token_merge() {
             NFT_AMOUNT,
             Some(SECOND_ATTRIBUTES),
         ),
-    ));
+    ))?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USER_ADDRESS_EXPR,
         CheckAccount::new().esdt_balance(FUNGIBLE_TOKEN_ID_EXPR, FUNGIBLE_AMOUNT),
-    ));
+    ))?;
+
+    Ok(())
 }
 
 #[test]
-fn test_partial_split() {
+fn test_partial_split() -> anyhow::Result<()> {
     let mut world = world();
 
     let use_module_whitebox =
@@ -596,7 +598,7 @@ fn test_partial_split() {
             ));
             assert_eq!(output_payments, expected_output_payments);
         },
-    );
+    )?;
 
     // fully remove instance
     world.whitebox_call(
@@ -654,11 +656,13 @@ fn test_partial_split() {
                 managed_biguint!(SECOND_ROYALTIES)
             );
         },
-    );
+    )?;
+
+    Ok(())
 }
 
 #[test]
-fn test_custom_attributes() {
+fn test_custom_attributes() -> anyhow::Result<()> {
     let mut world = world();
 
     let use_module_whitebox =
@@ -815,7 +819,9 @@ fn test_custom_attributes() {
             NFT_AMOUNT,
             Some(SECOND_ATTRIBUTES),
         ),
-    ));
+    ))?;
+
+    Ok(())
 }
 
 fn address_expr_to_address(address_expr: &str) -> Address {

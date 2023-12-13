@@ -5,11 +5,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn adder_go() {
-    world().run("scenarios/adder.scen.json");
+fn adder_go() -> anyhow::Result<()> {
+    world().run("scenarios/adder.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn interactor_trace_go() {
-    world().run("scenarios/interactor_trace.scen.json");
+fn interactor_trace_go() -> anyhow::Result<()> {
+    world().run("scenarios/interactor_trace.scen.json")?;
+
+    Ok(())
 }

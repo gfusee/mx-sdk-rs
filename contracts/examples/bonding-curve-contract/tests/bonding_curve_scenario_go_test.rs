@@ -5,36 +5,50 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn buy_go() {
-    world().run("scenarios/buy.scen.json");
+fn buy_go() -> anyhow::Result<()> {
+    world().run("scenarios/buy.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn claim_go() {
-    world().run("scenarios/claim.scen.json");
+fn claim_go() -> anyhow::Result<()> {
+    world().run("scenarios/claim.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn deploy_go() {
-    world().run("scenarios/deploy.scen.json");
+fn deploy_go() -> anyhow::Result<()> {
+    world().run("scenarios/deploy.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn deposit_go() {
-    world().run("scenarios/deposit.scen.json");
+fn deposit_go() -> anyhow::Result<()> {
+    world().run("scenarios/deposit.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn deposit_more_view_go() {
-    world().run("scenarios/deposit_more_view.scen.json");
+fn deposit_more_view_go() -> anyhow::Result<()> {
+    world().run("scenarios/deposit_more_view.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn sell_go() {
-    world().run("scenarios/sell.scen.json");
+fn sell_go() -> anyhow::Result<()> {
+    world().run("scenarios/sell.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn set_bonding_curve_go() {
-    world().run("scenarios/set_bonding_curve.scen.json");
+fn set_bonding_curve_go() -> anyhow::Result<()> {
+    world().run("scenarios/set_bonding_curve.scen.json")?;
+
+    Ok(())
 }

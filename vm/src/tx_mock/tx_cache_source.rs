@@ -13,7 +13,7 @@ pub trait TxCacheSource: Send + Sync {
 
 impl TxCacheSource for TxCache {
     fn load_account(&self, address: &VMAddress) -> anyhow::Result<Option<AccountData>> {
-        Ok(Some(self.with_account(address, AccountData::clone)?))
+        Ok(Some(self.with_account(address, |account| Ok(account.clone()))?))
     }
 
     fn blockchain_ref(&self) -> &BlockchainState {

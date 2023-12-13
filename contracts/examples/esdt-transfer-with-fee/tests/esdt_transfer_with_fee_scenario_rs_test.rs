@@ -12,16 +12,22 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn claim_rs() {
-    world().run("scenarios/claim.scen.json");
+fn claim_rs() -> anyhow::Result<()> {
+    world().run("scenarios/claim.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn deploy_rs() {
-    world().run("scenarios/deploy.scen.json");
+fn deploy_rs() -> anyhow::Result<()> {
+    world().run("scenarios/deploy.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn setup_fees_and_transfer_rs() {
-    world().run("scenarios/setup_fees_and_transfer.scen.json");
+fn setup_fees_and_transfer_rs() -> anyhow::Result<()> {
+    world().run("scenarios/setup_fees_and_transfer.scen.json")?;
+
+    Ok(())
 }

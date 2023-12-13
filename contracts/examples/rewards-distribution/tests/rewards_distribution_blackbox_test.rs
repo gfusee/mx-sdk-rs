@@ -143,7 +143,7 @@ impl RewardsDistributionTestState {
 }
 
 #[test]
-fn test_compute_brackets() {
+fn test_compute_brackets() -> anyhow::Result<()> {
     let mut state = RewardsDistributionTestState::new();
 
     let rewards_distribution_code = state.world.code_expression(REWARDS_DISTRIBUTION_PATH_EXPR);
@@ -157,7 +157,7 @@ fn test_compute_brackets() {
                 .code(rewards_distribution_code)
                 .balance("0"),
         ),
-    );
+    )?;
 
     state.world.whitebox_call(
         &state.rewards_distribution_whitebox,
@@ -190,11 +190,13 @@ fn test_compute_brackets() {
                 assert_eq!(computed.nft_reward_percent, expected_reward_percent);
             }
         },
-    );
+    )?;
+
+    Ok(())
 }
 
 #[test]
-fn test_raffle_and_claim() {
+fn test_raffle_and_claim() -> anyhow::Result<()> {
     let mut state = RewardsDistributionTestState::new();
 
     let nft_nonces: [u64; 6] = [1, 2, 3, 4, 5, 6];
@@ -362,12 +364,14 @@ fn test_raffle_and_claim() {
                     .rewards_distribution_contract
                     .claim_rewards(0u64, 0u64, reward_tokens),
             ),
-    );
+    )?;
 
     state
         .world
         .check_state_step(CheckStateStep::new().put_account(
             ALICE_ADDRESS_EXPR,
             CheckAccount::new().balance(balance_expr.as_str()),
-        ));
+        ))?;
+
+    Ok(())
 }

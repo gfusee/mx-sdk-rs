@@ -12,56 +12,78 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn balance_of_rs() {
-    world().run("scenarios/balanceOf.scen.json");
+fn balance_of_rs() -> anyhow::Result<()> {
+    world().run("scenarios/balanceOf.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn create_rs() {
-    world().run("scenarios/create.scen.json");
+fn create_rs() -> anyhow::Result<()> {
+    world().run("scenarios/create.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn exceptions_rs() {
-    world().run("scenarios/exceptions.scen.json");
+fn exceptions_rs() -> anyhow::Result<()> {
+    world().run("scenarios/exceptions.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn join_game_rs() {
-    world().run("scenarios/joinGame.scen.json");
+fn join_game_rs() -> anyhow::Result<()> {
+    world().run("scenarios/joinGame.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn reward_and_send_to_wallet_rs() {
-    world().run("scenarios/rewardAndSendToWallet.scen.json");
+fn reward_and_send_to_wallet_rs() -> anyhow::Result<()> {
+    world().run("scenarios/rewardAndSendToWallet.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn reward_winner_rs() {
-    world().run("scenarios/rewardWinner.scen.json");
+fn reward_winner_rs() -> anyhow::Result<()> {
+    world().run("scenarios/rewardWinner.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn reward_winner_last_rs() {
-    world().run("scenarios/rewardWinner_Last.scen.json");
+fn reward_winner_last_rs() -> anyhow::Result<()> {
+    world().run("scenarios/rewardWinner_Last.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn top_up_ok_rs() {
-    world().run("scenarios/topUp_ok.scen.json");
+fn top_up_ok_rs() -> anyhow::Result<()> {
+    world().run("scenarios/topUp_ok.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn top_up_withdraw_rs() {
-    world().run("scenarios/topUp_withdraw.scen.json");
+fn top_up_withdraw_rs() -> anyhow::Result<()> {
+    world().run("scenarios/topUp_withdraw.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn withdraw_ok_rs() {
-    world().run("scenarios/withdraw_Ok.scen.json");
+fn withdraw_ok_rs() -> anyhow::Result<()> {
+    world().run("scenarios/withdraw_Ok.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn withdraw_too_much_rs() {
-    world().run("scenarios/withdraw_TooMuch.scen.json");
+fn withdraw_too_much_rs() -> anyhow::Result<()> {
+    world().run("scenarios/withdraw_TooMuch.scen.json")?;
+
+    Ok(())
 }

@@ -11,7 +11,7 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn adder_blackbox_upgrade() {
+fn adder_blackbox_upgrade() -> anyhow::Result<()> {
     let mut world = world();
     let adder_code = world.code_expression(ADDER_PATH_EXPR);
 
@@ -20,7 +20,7 @@ fn adder_blackbox_upgrade() {
             SetStateStep::new()
                 .put_account("address:owner", Account::new().nonce(1))
                 .new_address("address:owner", 1, "sc:adder"),
-        )
+        )?
         .sc_deploy(
             ScDeployStep::new()
                 .from("address:owner")
@@ -28,7 +28,7 @@ fn adder_blackbox_upgrade() {
                 .argument("5")
                 .gas_limit("5,000,000")
                 .expect(TxExpect::ok().no_result()),
-        )
+        )?
         .sc_call(
             ScCallStep::new()
                 .from("address:owner")
@@ -38,7 +38,7 @@ fn adder_blackbox_upgrade() {
                 .argument("0x0502") // codeMetadata
                 .argument("8") // contract argument
                 .expect(TxExpect::ok().no_result()),
-        )
+        )?
         .check_state_step(
             CheckStateStep::new()
                 .put_account("address:owner", CheckAccount::new())
@@ -46,5 +46,7 @@ fn adder_blackbox_upgrade() {
                     "sc:adder",
                     CheckAccount::new().check_storage("str:sum", "8"),
                 ),
-        );
+        )?;
+
+    Ok(())
 }

@@ -9,286 +9,400 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn allowance_caller_caller_rs() {
-    world().run("scenarios/allowance_CallerCaller.scen.json");
+fn allowance_caller_caller_rs() -> anyhow::Result<()> {
+    world().run("scenarios/allowance_CallerCaller.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn allowance_caller_other_rs() {
-    world().run("scenarios/allowance_CallerOther.scen.json");
+fn allowance_caller_other_rs() -> anyhow::Result<()> {
+    world().run("scenarios/allowance_CallerOther.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn allowance_other_caller_rs() {
-    world().run("scenarios/allowance_OtherCaller.scen.json");
+fn allowance_other_caller_rs() -> anyhow::Result<()> {
+    world().run("scenarios/allowance_OtherCaller.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn allowance_other_eq_other_rs() {
-    world().run("scenarios/allowance_OtherEqOther.scen.json");
+fn allowance_other_eq_other_rs() -> anyhow::Result<()> {
+    world().run("scenarios/allowance_OtherEqOther.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn allowance_other_n_eq_other_rs() {
-    world().run("scenarios/allowance_OtherNEqOther.scen.json");
+fn allowance_other_n_eq_other_rs() -> anyhow::Result<()> {
+    world().run("scenarios/allowance_OtherNEqOther.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn approve_caller_positive_rs() {
-    world().run("scenarios/approve_Caller-Positive.scen.json");
+fn approve_caller_positive_rs() -> anyhow::Result<()> {
+    world().run("scenarios/approve_Caller-Positive.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn approve_caller_zero_rs() {
-    world().run("scenarios/approve_Caller-Zero.scen.json");
+fn approve_caller_zero_rs() -> anyhow::Result<()> {
+    world().run("scenarios/approve_Caller-Zero.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn approve_other_positive_rs() {
-    world().run("scenarios/approve_Other-Positive.scen.json");
+fn approve_other_positive_rs() -> anyhow::Result<()> {
+    world().run("scenarios/approve_Other-Positive.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn approve_other_zero_rs() {
-    world().run("scenarios/approve_Other-Zero.scen.json");
+fn approve_other_zero_rs() -> anyhow::Result<()> {
+    world().run("scenarios/approve_Other-Zero.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn approve_switch_caller_rs() {
-    world().run("scenarios/approve_SwitchCaller.scen.json");
+fn approve_switch_caller_rs() -> anyhow::Result<()> {
+    world().run("scenarios/approve_SwitchCaller.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn balance_of_caller_rs() {
-    world().run("scenarios/balanceOf_Caller.scen.json");
+fn balance_of_caller_rs() -> anyhow::Result<()> {
+    world().run("scenarios/balanceOf_Caller.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn balance_of_non_caller_rs() {
-    world().run("scenarios/balanceOf_NonCaller.scen.json");
+fn balance_of_non_caller_rs() -> anyhow::Result<()> {
+    world().run("scenarios/balanceOf_NonCaller.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn not_payable_rs() {
-    world().run("scenarios/not_payable.scen.json");
+fn not_payable_rs() -> anyhow::Result<()> {
+    world().run("scenarios/not_payable.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn not_payable_esdt_rs() {
-    world().run("scenarios/not_payable_esdt.scen.json");
+fn not_payable_esdt_rs() -> anyhow::Result<()> {
+    world().run("scenarios/not_payable_esdt.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn total_supply_positive_rs() {
-    world().run("scenarios/totalSupply_Positive.scen.json");
+fn total_supply_positive_rs() -> anyhow::Result<()> {
+    world().run("scenarios/totalSupply_Positive.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn total_supply_zero_rs() {
-    world().run("scenarios/totalSupply_Zero.scen.json");
+fn total_supply_zero_rs() -> anyhow::Result<()> {
+    world().run("scenarios/totalSupply_Zero.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_all_distinct_balance_eq_allowance_rs() {
-    world().run("scenarios/transferFrom_AllDistinct-BalanceEqAllowance.scen.json");
+fn transfer_from_all_distinct_balance_eq_allowance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_AllDistinct-BalanceEqAllowance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_all_distinct_balance_n_eq_allowance_rs() {
-    world().run("scenarios/transferFrom_AllDistinct-BalanceNEqAllowance.scen.json");
+fn transfer_from_all_distinct_balance_n_eq_allowance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_AllDistinct-BalanceNEqAllowance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_all_distinct_entire_allowance_more_than_balance_rs() {
-    world().run("scenarios/transferFrom_AllDistinct-EntireAllowanceMoreThanBalance.scen.json");
+fn transfer_from_all_distinct_entire_allowance_more_than_balance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_AllDistinct-EntireAllowanceMoreThanBalance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_all_distinct_entire_balance_eq_allowance_rs() {
-    world().run("scenarios/transferFrom_AllDistinct-EntireBalanceEqAllowance.scen.json");
+fn transfer_from_all_distinct_entire_balance_eq_allowance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_AllDistinct-EntireBalanceEqAllowance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_all_distinct_entire_balance_more_than_allowance_rs() {
-    world().run("scenarios/transferFrom_AllDistinct-EntireBalanceMoreThanAllowance.scen.json");
+fn transfer_from_all_distinct_entire_balance_more_than_allowance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_AllDistinct-EntireBalanceMoreThanAllowance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_all_distinct_more_than_allowance_less_than_balance_rs() {
-    world().run("scenarios/transferFrom_AllDistinct-MoreThanAllowanceLessThanBalance.scen.json");
+fn transfer_from_all_distinct_more_than_allowance_less_than_balance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_AllDistinct-MoreThanAllowanceLessThanBalance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_all_distinct_more_than_balance_less_than_allowance_rs() {
-    world().run("scenarios/transferFrom_AllDistinct-MoreThanBalanceLessThanAllowance.scen.json");
+fn transfer_from_all_distinct_more_than_balance_less_than_allowance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_AllDistinct-MoreThanBalanceLessThanAllowance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_all_distinct_no_overflow_rs() {
-    world().run("scenarios/transferFrom_AllDistinct-NoOverflow.scen.json");
+fn transfer_from_all_distinct_no_overflow_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_AllDistinct-NoOverflow.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_all_distinct_still_no_overflow_rs() {
-    world().run("scenarios/transferFrom_AllDistinct-StillNoOverflow.scen.json");
+fn transfer_from_all_distinct_still_no_overflow_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_AllDistinct-StillNoOverflow.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_all_equal_allowance_relevant_rs() {
-    world().run("scenarios/transferFrom_AllEqual-AllowanceRelevant.scen.json");
+fn transfer_from_all_equal_allowance_relevant_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_AllEqual-AllowanceRelevant.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_all_equal_entire_balance_rs() {
-    world().run("scenarios/transferFrom_AllEqual-EntireBalance.scen.json");
+fn transfer_from_all_equal_entire_balance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_AllEqual-EntireBalance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_caller_eq_from_allowance_relevant_rs() {
-    world().run("scenarios/transferFrom_CallerEqFrom-AllowanceRelevant.scen.json");
+fn transfer_from_caller_eq_from_allowance_relevant_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_CallerEqFrom-AllowanceRelevant.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_caller_eq_from_entire_balance_rs() {
-    world().run("scenarios/transferFrom_CallerEqFrom-EntireBalance.scen.json");
+fn transfer_from_caller_eq_from_entire_balance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_CallerEqFrom-EntireBalance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_caller_eq_from_more_than_balance_rs() {
-    world().run("scenarios/transferFrom_CallerEqFrom-MoreThanBalance.scen.json");
+fn transfer_from_caller_eq_from_more_than_balance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_CallerEqFrom-MoreThanBalance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_caller_eq_to_balance_n_eq_allowance_rs() {
-    world().run("scenarios/transferFrom_CallerEqTo-BalanceNEqAllowance.scen.json");
+fn transfer_from_caller_eq_to_balance_n_eq_allowance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_CallerEqTo-BalanceNEqAllowance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_caller_eq_to_more_than_allowance_less_than_balance_rs() {
-    world().run("scenarios/transferFrom_CallerEqTo-MoreThanAllowanceLessThanBalance.scen.json");
+fn transfer_from_caller_eq_to_more_than_allowance_less_than_balance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_CallerEqTo-MoreThanAllowanceLessThanBalance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_caller_eq_to_more_than_balance_less_than_allowance_rs() {
-    world().run("scenarios/transferFrom_CallerEqTo-MoreThanBalanceLessThanAllowance.scen.json");
+fn transfer_from_caller_eq_to_more_than_balance_less_than_allowance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_CallerEqTo-MoreThanBalanceLessThanAllowance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_exploratory_multiple_transfers_succeed_rs() {
-    world().run("scenarios/transferFrom_Exploratory-MultipleTransfersSucceed.scen.json");
+fn transfer_from_exploratory_multiple_transfers_succeed_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_Exploratory-MultipleTransfersSucceed.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_exploratory_multiple_transfers_throw_rs() {
-    world().run("scenarios/transferFrom_Exploratory-MultipleTransfersThrow.scen.json");
+fn transfer_from_exploratory_multiple_transfers_throw_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_Exploratory-MultipleTransfersThrow.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_from_eq_to_balance_eq_allowance_rs() {
-    world().run("scenarios/transferFrom_FromEqTo-BalanceEqAllowance.scen.json");
+fn transfer_from_from_eq_to_balance_eq_allowance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_FromEqTo-BalanceEqAllowance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_from_eq_to_balance_n_eq_allowance_rs() {
-    world().run("scenarios/transferFrom_FromEqTo-BalanceNEqAllowance.scen.json");
+fn transfer_from_from_eq_to_balance_n_eq_allowance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_FromEqTo-BalanceNEqAllowance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_from_eq_to_entire_allowance_more_than_balance_rs() {
-    world().run("scenarios/transferFrom_FromEqTo-EntireAllowanceMoreThanBalance.scen.json");
+fn transfer_from_from_eq_to_entire_allowance_more_than_balance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_FromEqTo-EntireAllowanceMoreThanBalance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_from_eq_to_entire_balance_eq_allowance_rs() {
-    world().run("scenarios/transferFrom_FromEqTo-EntireBalanceEqAllowance.scen.json");
+fn transfer_from_from_eq_to_entire_balance_eq_allowance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_FromEqTo-EntireBalanceEqAllowance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_from_eq_to_entire_balance_more_than_allowance_rs() {
-    world().run("scenarios/transferFrom_FromEqTo-EntireBalanceMoreThanAllowance.scen.json");
+fn transfer_from_from_eq_to_entire_balance_more_than_allowance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_FromEqTo-EntireBalanceMoreThanAllowance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_from_eq_to_more_than_allowance_less_than_balance_rs() {
-    world().run("scenarios/transferFrom_FromEqTo-MoreThanAllowanceLessThanBalance.scen.json");
+fn transfer_from_from_eq_to_more_than_allowance_less_than_balance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_FromEqTo-MoreThanAllowanceLessThanBalance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_from_eq_to_more_than_balance_less_than_allowance_rs() {
-    world().run("scenarios/transferFrom_FromEqTo-MoreThanBalanceLessThanAllowance.scen.json");
+fn transfer_from_from_eq_to_more_than_balance_less_than_allowance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_FromEqTo-MoreThanBalanceLessThanAllowance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_from_from_eq_to_no_overflow_rs() {
-    world().run("scenarios/transferFrom_FromEqTo-NoOverflow.scen.json");
+fn transfer_from_from_eq_to_no_overflow_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transferFrom_FromEqTo-NoOverflow.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_caller_allowance_irrelevant_rs() {
-    world().run("scenarios/transfer_Caller-AllowanceIrrelevant.scen.json");
+fn transfer_caller_allowance_irrelevant_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transfer_Caller-AllowanceIrrelevant.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_caller_entire_balance_rs() {
-    world().run("scenarios/transfer_Caller-EntireBalance.scen.json");
+fn transfer_caller_entire_balance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transfer_Caller-EntireBalance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_caller_more_than_balance_rs() {
-    world().run("scenarios/transfer_Caller-MoreThanBalance.scen.json");
+fn transfer_caller_more_than_balance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transfer_Caller-MoreThanBalance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_caller_no_overflow_rs() {
-    world().run("scenarios/transfer_Caller-NoOverflow.scen.json");
+fn transfer_caller_no_overflow_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transfer_Caller-NoOverflow.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_caller_positive_rs() {
-    world().run("scenarios/transfer_Caller-Positive.scen.json");
+fn transfer_caller_positive_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transfer_Caller-Positive.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_caller_still_no_overflow_rs() {
-    world().run("scenarios/transfer_Caller-StillNoOverflow.scen.json");
+fn transfer_caller_still_no_overflow_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transfer_Caller-StillNoOverflow.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_caller_zero_rs() {
-    world().run("scenarios/transfer_Caller-Zero.scen.json");
+fn transfer_caller_zero_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transfer_Caller-Zero.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_other_allowance_irrelevant_rs() {
-    world().run("scenarios/transfer_Other-AllowanceIrrelevant.scen.json");
+fn transfer_other_allowance_irrelevant_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transfer_Other-AllowanceIrrelevant.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_other_entire_balance_rs() {
-    world().run("scenarios/transfer_Other-EntireBalance.scen.json");
+fn transfer_other_entire_balance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transfer_Other-EntireBalance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_other_more_than_balance_rs() {
-    world().run("scenarios/transfer_Other-MoreThanBalance.scen.json");
+fn transfer_other_more_than_balance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transfer_Other-MoreThanBalance.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_other_no_overflow_rs() {
-    world().run("scenarios/transfer_Other-NoOverflow.scen.json");
+fn transfer_other_no_overflow_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transfer_Other-NoOverflow.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_other_positive_rs() {
-    world().run("scenarios/transfer_Other-Positive.scen.json");
+fn transfer_other_positive_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transfer_Other-Positive.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_other_still_no_overflow_rs() {
-    world().run("scenarios/transfer_Other-StillNoOverflow.scen.json");
+fn transfer_other_still_no_overflow_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transfer_Other-StillNoOverflow.scen.json")?;
+    
+    Ok(())
 }
 
 #[test]
-fn transfer_other_zero_rs() {
-    world().run("scenarios/transfer_Other-Zero.scen.json");
+fn transfer_other_zero_rs() -> anyhow::Result<()> {
+    world().run("scenarios/transfer_Other-Zero.scen.json")?;
+    
+    Ok(())
 }

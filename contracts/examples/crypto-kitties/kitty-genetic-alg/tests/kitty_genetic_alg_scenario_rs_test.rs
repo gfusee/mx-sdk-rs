@@ -10,11 +10,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn generate_kitty_genes_rs() {
-    world().run("scenarios/generate-kitty-genes.scen.json");
+fn generate_kitty_genes_rs() -> anyhow::Result<()> {
+    world().run("scenarios/generate-kitty-genes.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn init_rs() {
-    world().run("scenarios/init.scen.json");
+fn init_rs() -> anyhow::Result<()> {
+    world().run("scenarios/init.scen.json")?;
+
+    Ok(())
 }
