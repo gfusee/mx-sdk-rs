@@ -1,5 +1,6 @@
 use colored::Colorize;
 use std::{io::ErrorKind, path::Path, process::Command};
+use anyhow::bail;
 
 const RUNNER_TOOL_NAME: &str = "run-scenarios";
 const RUNNER_TOOL_NAME_LEGACY: &str = "mandos-test";
@@ -9,13 +10,13 @@ struct ToolNotFound;
 
 /// Runs the VM executable,
 /// which reads parses and executes one or more mandos tests.
-pub fn run_vm_go_tool(absolute_path: &Path) {
+pub fn run_vm_go_tool(absolute_path: &Path) -> anyhow::Result<()> {
     if cfg!(not(feature = "run-go-tests")) {
-        return;
+        return Ok(());
     }
 
     if run_scenario_tool(RUNNER_TOOL_NAME, absolute_path).is_ok() {
-        return;
+        return Ok(());
     }
 
     // fallback - use the old binary
@@ -24,10 +25,10 @@ pub fn run_vm_go_tool(absolute_path: &Path) {
         format!("Warning: `{RUNNER_TOOL_NAME}` not found. Using `{RUNNER_TOOL_NAME_LEGACY}` as fallback.").yellow(),
     );
     if run_scenario_tool(RUNNER_TOOL_NAME_LEGACY, absolute_path).is_ok() {
-        return;
+        return Ok(());
     }
 
-    panic!("Could not find `{RUNNER_TOOL_NAME_LEGACY}`, aborting.");
+    bail!("Could not find `{RUNNER_TOOL_NAME_LEGACY}`, aborting.");
 }
 
 fn run_scenario_tool(tool_name: &str, path: &Path) -> Result<(), ToolNotFound> {

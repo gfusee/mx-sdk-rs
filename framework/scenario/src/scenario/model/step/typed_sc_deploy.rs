@@ -142,7 +142,7 @@ pub trait TypedScDeployExecutor {
     fn execute_typed_sc_deploy<OriginalResult, RequestedResult>(
         &mut self,
         typed_sc_call: TypedScDeploy<OriginalResult>,
-    ) -> (Address, RequestedResult)
+    ) -> anyhow::Result<(Address, RequestedResult)>
     where
         OriginalResult: TopEncodeMulti,
         RequestedResult: CodecFrom<OriginalResult>;
@@ -156,7 +156,7 @@ where
     pub fn execute<E: TypedScDeployExecutor, RequestedResult>(
         self,
         executor: &mut E,
-    ) -> (Address, RequestedResult)
+    ) -> anyhow::Result<(Address, RequestedResult)>
     where
         RequestedResult: CodecFrom<OriginalResult>,
     {

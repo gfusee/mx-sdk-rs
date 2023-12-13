@@ -55,9 +55,9 @@ pub(super) fn execute_transfer_builtin_func<F>(
     tx_input: TxInput,
     tx_cache: TxCache,
     f: F,
-) -> (TxResult, BlockchainUpdate)
+) -> anyhow::Result<(TxResult, BlockchainUpdate)>
 where
-    F: FnOnce(),
+    F: FnOnce() -> anyhow::Result<()>,
 {
     let mut builtin_logs = Vec::new();
     for raw_esdt_transfer in &parsed_tx.raw_esdt_transfers {
@@ -87,10 +87,10 @@ where
         ..Default::default()
     };
 
-    let (mut tx_result, blockchain_updates) = vm.default_execution(exec_input, tx_cache, f);
+    let (mut tx_result, blockchain_updates) = vm.default_execution(exec_input, tx_cache, f)?;
 
     // prepends esdt log
     tx_result.result_logs = [builtin_logs.as_slice(), tx_result.result_logs.as_slice()].concat();
 
-    (tx_result, blockchain_updates)
+    Ok((tx_result, blockchain_updates))
 }

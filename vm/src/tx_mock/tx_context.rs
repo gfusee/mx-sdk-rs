@@ -88,28 +88,28 @@ impl TxContext {
         self.tx_cache.blockchain_ref()
     }
 
-    pub fn with_account<R, F>(&self, address: &VMAddress, f: F) -> R
+    pub fn with_account<R, F>(&self, address: &VMAddress, f: F) -> anyhow::Result<R>
     where
         F: FnOnce(&AccountData) -> R,
     {
         self.tx_cache.with_account(address, f)
     }
 
-    pub fn with_contract_account<R, F>(&self, f: F) -> R
+    pub fn with_contract_account<R, F>(&self, f: F) -> anyhow::Result<R>
     where
         F: FnOnce(&AccountData) -> R,
     {
         self.with_account(&self.tx_input_box.to, f)
     }
 
-    pub fn with_account_mut<R, F>(&self, address: &VMAddress, f: F) -> R
+    pub fn with_account_mut<R, F>(&self, address: &VMAddress, f: F) -> anyhow::Result<R>
     where
         F: FnOnce(&mut AccountData) -> R,
     {
         self.tx_cache.with_account_mut(address, f)
     }
 
-    pub fn with_contract_account_mut<R, F>(&self, f: F) -> R
+    pub fn with_contract_account_mut<R, F>(&self, f: F) -> anyhow::Result<R>
     where
         F: FnOnce(&mut AccountData) -> R,
     {

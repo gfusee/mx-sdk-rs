@@ -12,7 +12,7 @@ impl TxCache {
         &self,
         address: &VMAddress,
         call_value: &BigUint,
-    ) -> Result<(), TxPanic> {
+    ) -> anyhow::Result<Result<(), TxPanic>> {
         self.with_account_mut(address, |account| {
             if call_value > &account.egld_balance {
                 return Err(TxPanic::vm_error("failed transfer (insufficient funds)"));
@@ -22,7 +22,7 @@ impl TxCache {
         })
     }
 
-    pub fn subtract_tx_gas(&self, address: &VMAddress, gas_limit: u64, gas_price: u64) {
+    pub fn subtract_tx_gas(&self, address: &VMAddress, gas_limit: u64, gas_price: u64) -> anyhow::Result<()> {
         self.with_account_mut(address, |account| {
             let gas_cost = BigUint::from(gas_limit) * BigUint::from(gas_price);
             assert!(
@@ -30,13 +30,13 @@ impl TxCache {
                 "Not enough balance to pay gas upfront"
             );
             account.egld_balance -= &gas_cost;
-        });
+        })
     }
 
-    pub fn increase_egld_balance(&self, address: &VMAddress, amount: &BigUint) {
+    pub fn increase_egld_balance(&self, address: &VMAddress, amount: &BigUint) -> anyhow::Result<()> {
         self.with_account_mut(address, |account| {
             account.egld_balance += amount;
-        });
+        })
     }
 
     pub fn subtract_esdt_balance(
@@ -45,7 +45,7 @@ impl TxCache {
         esdt_token_identifier: &[u8],
         nonce: u64,
         value: &BigUint,
-    ) -> Result<EsdtInstanceMetadata, TxPanic> {
+    ) -> anyhow::Result<Result<EsdtInstanceMetadata, TxPanic>> {
         self.with_account_mut(address, |account| {
             let esdt_data_map = &mut account.esdt;
             let esdt_data = esdt_data_map
@@ -75,7 +75,7 @@ impl TxCache {
         nonce: u64,
         value: &BigUint,
         esdt_metadata: EsdtInstanceMetadata,
-    ) {
+    ) -> anyhow::Result<()> {
         self.with_account_mut(address, |account| {
             account.esdt.increase_balance(
                 esdt_token_identifier.to_vec(),
@@ -83,7 +83,7 @@ impl TxCache {
                 value,
                 esdt_metadata,
             );
-        });
+        })
     }
 
     pub fn transfer_egld_balance(
@@ -91,14 +91,16 @@ impl TxCache {
         from: &VMAddress,
         to: &VMAddress,
         value: &BigUint,
-    ) -> Result<(), TxPanic> {
+    ) -> anyhow::Result<Result<(), TxPanic>> {
         if !is_system_sc_address(from) {
-            self.subtract_egld_balance(from, value)?;
+            if let Err(error) = self.subtract_egld_balance(from, value)? {
+                return Ok(Err(error))
+            };
         }
         if !is_system_sc_address(to) {
-            self.increase_egld_balance(to, value);
+            self.increase_egld_balance(to, value)?;
         }
-        Ok(())
+        Ok(Ok(()))
     }
 
     pub fn transfer_esdt_balance(
@@ -108,12 +110,19 @@ impl TxCache {
         esdt_token_identifier: &[u8],
         nonce: u64,
         value: &BigUint,
-    ) -> Result<(), TxPanic> {
+    ) -> anyhow::Result<Result<(), TxPanic>> {
         if !is_system_sc_address(from) && !is_system_sc_address(to) {
-            let metadata = self.subtract_esdt_balance(from, esdt_token_identifier, nonce, value)?;
-            self.increase_esdt_balance(to, esdt_token_identifier, nonce, value, metadata);
+            match self.subtract_esdt_balance(from, esdt_token_identifier, nonce, value)? {
+                Ok(metadata) => {
+                    self.increase_esdt_balance(to, esdt_token_identifier, nonce, value, metadata)?;
+                }
+                Err(error) => {
+                    return Ok(Err(error))
+                }
+            }
         }
-        Ok(())
+
+        Ok(Ok(()))
     }
 }
 

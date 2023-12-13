@@ -17,14 +17,16 @@ impl BuiltinFunction for UpgradeContract {
         tx_cache: TxCache,
         vm: &BlockchainVMRef,
         f: F,
-    ) -> (TxResult, BlockchainUpdate)
+    ) -> anyhow::Result<(TxResult, BlockchainUpdate)>
     where
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
         if tx_input.args.len() < 2 {
-            return (
-                TxResult::from_vm_error("upgradeContract expects at least 2 arguments"),
-                BlockchainUpdate::empty(),
+            return Ok(
+                (
+                    TxResult::from_vm_error("upgradeContract expects at least 2 arguments"),
+                    BlockchainUpdate::empty(),
+                )
             );
         }
 
@@ -41,7 +43,7 @@ impl BuiltinFunction for UpgradeContract {
 
         tx_cache.with_account_mut(&tx_input.to, |account| {
             account.contract_path = Some(new_code);
-        });
+        })?;
 
         let exec_input = TxInput {
             from: tx_input.from,
@@ -56,6 +58,6 @@ impl BuiltinFunction for UpgradeContract {
             ..Default::default()
         };
 
-        vm.default_execution(exec_input, tx_cache, f)
+        Ok(vm.default_execution(exec_input, tx_cache, f)?)
     }
 }

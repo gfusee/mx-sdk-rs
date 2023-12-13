@@ -19,26 +19,34 @@ impl BuiltinFunction for MigrateUserName {
         tx_cache: TxCache,
         _vm: &BlockchainVMRef,
         _f: F,
-    ) -> (TxResult, BlockchainUpdate)
+    ) -> anyhow::Result<(TxResult, BlockchainUpdate)>
     where
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
-        self.execute_with_result(tx_input, tx_cache)
-            .unwrap_or_else(|err_result| (err_result, BlockchainUpdate::empty()))
+        match self.execute_with_result(tx_input, tx_cache)? {
+            Ok(result) => {
+                Ok(result)
+            }
+            Err(err_result) => {
+                Ok((err_result, BlockchainUpdate::empty()))
+            }
+        }
     }
 }
 
 impl MigrateUserName {
     #[allow(clippy::result_large_err)]
-    fn execute_with_result(&self, tx_input: TxInput, tx_cache: TxCache) -> BlockchainResult {
+    fn execute_with_result(&self, tx_input: TxInput, tx_cache: TxCache) -> anyhow::Result<BlockchainResult> {
         if tx_input.args.len() != 1 {
-            return Result::Err(TxResult::from_vm_error(
-                "migrateUserName expects 1 argument",
-            ));
+            return Ok(
+                Err(TxResult::from_vm_error(
+                    "migrateUserName expects 1 argument",
+                ))
+            );
         }
 
         let username = tx_input.args[0].clone();
-        tx_cache.with_account_mut(&tx_input.to, |account| {
+        let result = tx_cache.with_account_mut(&tx_input.to, |account| {
             if account.username != username {
                 return Result::Err(TxResult::from_vm_error("username mismatch"));
             }
@@ -50,6 +58,10 @@ impl MigrateUserName {
             }
         })?;
 
-        Result::Ok((TxResult::empty(), tx_cache.into_blockchain_updates()))
+        if let Err(error) = result {
+            return Ok(Err(error))
+        }
+
+        Ok(Ok((TxResult::empty(), tx_cache.into_blockchain_updates())))
     }
 }

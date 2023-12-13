@@ -8,10 +8,10 @@ use crate::{
 
 /// Issues a new fungible token.
 #[allow(unused_variables)]
-pub fn issue(tx_input: TxInput, tx_cache: TxCache) -> (TxResult, BlockchainUpdate) {
+pub fn issue(tx_input: TxInput, tx_cache: TxCache) -> anyhow::Result<(TxResult, BlockchainUpdate)> {
     if tx_input.args.len() < 4 {
         let tx_result = TxResult::from_vm_error("not enough arguments");
-        return (tx_result, BlockchainUpdate::empty());
+        return Ok((tx_result, BlockchainUpdate::empty()));
     }
     let name = tx_input.args[0].clone();
     let ticker = tx_input.args[1].clone();
@@ -23,10 +23,10 @@ pub fn issue(tx_input: TxInput, tx_cache: TxCache) -> (TxResult, BlockchainUpdat
 
 /// Issues a new semi-fungible token.
 #[allow(unused_variables)]
-pub fn issue_semi_fungible(tx_input: TxInput, tx_cache: TxCache) -> (TxResult, BlockchainUpdate) {
+pub fn issue_semi_fungible(tx_input: TxInput, tx_cache: TxCache) -> anyhow::Result<(TxResult, BlockchainUpdate)> {
     if tx_input.args.len() < 2 {
         let tx_result = TxResult::from_vm_error("not enough arguments");
-        return (tx_result, BlockchainUpdate::empty());
+        return Ok((tx_result, BlockchainUpdate::empty()));
     }
     let name = tx_input.args[0].clone();
     let ticker = tx_input.args[1].clone();
@@ -36,10 +36,10 @@ pub fn issue_semi_fungible(tx_input: TxInput, tx_cache: TxCache) -> (TxResult, B
 
 /// Issues a new non-fungible token.
 #[allow(unused_variables)]
-pub fn issue_non_fungible(tx_input: TxInput, tx_cache: TxCache) -> (TxResult, BlockchainUpdate) {
+pub fn issue_non_fungible(tx_input: TxInput, tx_cache: TxCache) -> anyhow::Result<(TxResult, BlockchainUpdate)> {
     if tx_input.args.len() < 2 {
         let tx_result = TxResult::from_vm_error("not enough arguments");
-        return (tx_result, BlockchainUpdate::empty());
+        return Ok((tx_result, BlockchainUpdate::empty()));
     }
     let name = tx_input.args[0].clone();
     let ticker = tx_input.args[1].clone();
@@ -52,10 +52,10 @@ pub fn issue_non_fungible(tx_input: TxInput, tx_cache: TxCache) -> (TxResult, Bl
 pub fn register_and_set_all_roles(
     tx_input: TxInput,
     tx_cache: TxCache,
-) -> (TxResult, BlockchainUpdate) {
+) -> anyhow::Result<(TxResult, BlockchainUpdate)> {
     if tx_input.args.len() < 4 {
         let tx_result = TxResult::from_vm_error("not enough arguments");
-        return (tx_result, BlockchainUpdate::empty());
+        return Ok((tx_result, BlockchainUpdate::empty()));
     }
 
     let name = tx_input.args[0].clone();
@@ -71,7 +71,7 @@ fn register_and_set_roles(
     tx_cache: TxCache,
     ticker: Vec<u8>,
     token_type: VMTokenType,
-) -> (TxResult, BlockchainUpdate) {
+) -> anyhow::Result<(TxResult, BlockchainUpdate)> {
     let mut new_token_identifiers = tx_cache.get_new_token_identifiers();
 
     let token_identifier = if let Some((i, ti)) =
@@ -87,7 +87,7 @@ fn register_and_set_roles(
         account
             .esdt
             .register_and_set_roles(&token_identifier, token_type);
-    });
+    })?;
     tx_cache.set_new_token_identifiers(new_token_identifiers);
 
     let tx_result = TxResult {
@@ -95,7 +95,7 @@ fn register_and_set_roles(
         ..Default::default()
     };
 
-    (tx_result, tx_cache.into_blockchain_updates())
+    Ok((tx_result, tx_cache.into_blockchain_updates()))
 }
 
 fn first_token_identifier_with_ticker(

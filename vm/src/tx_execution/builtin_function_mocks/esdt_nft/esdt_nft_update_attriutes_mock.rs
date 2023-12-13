@@ -19,13 +19,13 @@ impl BuiltinFunction for ESDTNftUpdateAttributes {
         tx_cache: TxCache,
         _vm: &BlockchainVMRef,
         _f: F,
-    ) -> (TxResult, BlockchainUpdate)
+    ) -> anyhow::Result<(TxResult, BlockchainUpdate)>
     where
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
         if tx_input.args.len() != 3 {
             let err_result = TxResult::from_vm_error("ESDTNFTUpdateAttributes expects 3 arguments");
-            return (err_result, BlockchainUpdate::empty());
+            return Ok((err_result, BlockchainUpdate::empty()));
         }
 
         let token_identifier = tx_input.args[0].as_slice();
@@ -36,7 +36,7 @@ impl BuiltinFunction for ESDTNftUpdateAttributes {
             account
                 .esdt
                 .update_attributes(token_identifier, nonce, attributes_bytes.to_vec());
-        });
+        })?;
 
         let esdt_nft_create_log = TxLog {
             address: tx_input.from,
@@ -56,6 +56,6 @@ impl BuiltinFunction for ESDTNftUpdateAttributes {
             ..Default::default()
         };
 
-        (tx_result, tx_cache.into_blockchain_updates())
+        Ok((tx_result, tx_cache.into_blockchain_updates()))
     }
 }

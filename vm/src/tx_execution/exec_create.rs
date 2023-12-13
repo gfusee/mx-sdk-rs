@@ -14,9 +14,9 @@ impl BlockchainVMRef {
         contract_path: &[u8],
         state: &mut Shareable<BlockchainState>,
         f: F,
-    ) -> (VMAddress, TxResult)
+    ) -> anyhow::Result<(VMAddress, TxResult)>
     where
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
         // nonce gets increased irrespective of whether the tx fails or not
         // must be done after computing the new address
@@ -27,10 +27,10 @@ impl BlockchainVMRef {
             let tx_cache = TxCache::new(state_arc);
 
             self.deploy_contract(tx_input, contract_path.to_vec(), tx_cache, f)
-        });
+        })?;
 
         blockchain_updates.apply(state);
 
-        (new_address, tx_result)
+        Ok((new_address, tx_result))
     }
 }

@@ -3,11 +3,13 @@ use crate::{
     types::VMAddress,
 };
 
-pub fn set_special_role(tx_input: TxInput, tx_cache: TxCache) -> (TxResult, BlockchainUpdate) {
+pub fn set_special_role(tx_input: TxInput, tx_cache: TxCache) -> anyhow::Result<(TxResult, BlockchainUpdate)> {
     if tx_input.args.len() < 3 {
-        return (
-            TxResult::from_vm_error("setSpecialRole too few arguments"),
-            BlockchainUpdate::empty(),
+        return Ok(
+            (
+                TxResult::from_vm_error("setSpecialRole too few arguments"),
+                BlockchainUpdate::empty(),
+            )
         );
     }
 
@@ -17,7 +19,7 @@ pub fn set_special_role(tx_input: TxInput, tx_cache: TxCache) -> (TxResult, Bloc
 
     tx_cache.with_account_mut(&address, |account| {
         account.esdt.set_special_role(&token_identifier, &role);
-    });
+    })?;
 
-    (TxResult::empty(), tx_cache.into_blockchain_updates())
+    Ok((TxResult::empty(), tx_cache.into_blockchain_updates()))
 }

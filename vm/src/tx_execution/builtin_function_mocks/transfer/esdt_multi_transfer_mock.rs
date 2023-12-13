@@ -38,9 +38,9 @@ impl BuiltinFunction for ESDTMultiTransfer {
         tx_cache: TxCache,
         vm: &BlockchainVMRef,
         f: F,
-    ) -> (TxResult, BlockchainUpdate)
+    ) -> anyhow::Result<(TxResult, BlockchainUpdate)>
     where
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
         match try_parse_input(&tx_input) {
             Ok(parsed_tx) => {
@@ -48,7 +48,7 @@ impl BuiltinFunction for ESDTMultiTransfer {
             },
             Err(message) => {
                 let err_result = TxResult::from_vm_error(message);
-                (err_result, BlockchainUpdate::empty())
+                Ok((err_result, BlockchainUpdate::empty()))
             },
         }
     }

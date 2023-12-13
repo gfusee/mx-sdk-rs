@@ -1,0 +1,27 @@
+{
+    "name": "call should fail because the receiver is unknown",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:A": {
+                    "nonce": "0",
+                    "balance": "0"
+                }
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "1",
+            "comment": "contract is unknown",
+            "tx": {
+                "from": "address:A",
+                "to": "sc:unknown",
+                "function": "someFunctionName",
+                "arguments": [],
+                "gasLimit": "100,000",
+                "gasPrice": "0"
+            }
+        }
+    ]
+}

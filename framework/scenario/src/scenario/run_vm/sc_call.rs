@@ -15,11 +15,13 @@ impl ScenarioVMRunner {
     /// Adds a SC call step, as specified in the `step` argument, then executes it.
     ///
     /// The result of the operation gets saved back in the step's response field.
-    pub fn perform_sc_call_update_results(&mut self, step: &mut ScCallStep) {
+    pub fn perform_sc_call_update_results(&mut self, step: &mut ScCallStep) -> anyhow::Result<()> {
         let tx_result =
-            self.perform_sc_call_lambda_and_check(step, execute_current_tx_context_input);
+            self.perform_sc_call_lambda_and_check(step, execute_current_tx_context_input)?;
         let response = TxResponse::from_tx_result(tx_result);
         step.save_response(response);
+
+        Ok(())
     }
 
     /// Adds a SC call step, executes it and retrieves the transaction result ("out" field).
@@ -31,21 +33,21 @@ impl ScenarioVMRunner {
     pub fn perform_sc_call_get_result<OriginalResult, RequestedResult>(
         &mut self,
         typed_sc_call: TypedScCall<OriginalResult>,
-    ) -> RequestedResult
+    ) -> anyhow::Result<RequestedResult>
     where
         OriginalResult: TopEncodeMulti,
         RequestedResult: CodecFrom<OriginalResult>,
     {
         let sc_call_step: ScCallStep = typed_sc_call.into();
         let tx_result =
-            self.perform_sc_call_lambda(&sc_call_step, execute_current_tx_context_input);
+            self.perform_sc_call_lambda(&sc_call_step, execute_current_tx_context_input)?;
         let mut raw_result = tx_result.result_values;
-        RequestedResult::multi_decode_or_handle_err(&mut raw_result, PanicErrorHandler).unwrap()
+        Ok(RequestedResult::multi_decode_or_handle_err(&mut raw_result, PanicErrorHandler).unwrap())
     }
 
-    pub fn perform_sc_call_lambda<F>(&mut self, sc_call_step: &ScCallStep, f: F) -> TxResult
+    pub fn perform_sc_call_lambda<F>(&mut self, sc_call_step: &ScCallStep, f: F) -> anyhow::Result<TxResult>
     where
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
         let tx_input = tx_input_from_call(sc_call_step);
 
@@ -65,15 +67,15 @@ impl ScenarioVMRunner {
         &mut self,
         sc_call_step: &ScCallStep,
         f: F,
-    ) -> TxResult
+    ) -> anyhow::Result<TxResult>
     where
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
-        let tx_result = self.perform_sc_call_lambda(sc_call_step, f);
+        let tx_result = self.perform_sc_call_lambda(sc_call_step, f)?;
         if let Some(tx_expect) = &sc_call_step.expect {
             check_tx_output(&sc_call_step.id, tx_expect, &tx_result);
         }
-        tx_result
+        Ok(tx_result)
     }
 }
 

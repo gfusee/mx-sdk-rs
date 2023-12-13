@@ -21,13 +21,13 @@ impl BuiltinFunction for ESDTNftBurn {
         tx_cache: TxCache,
         _vm: &BlockchainVMRef,
         _f: F,
-    ) -> (TxResult, BlockchainUpdate)
+    ) -> anyhow::Result<(TxResult, BlockchainUpdate)>
     where
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
         if tx_input.args.len() != 3 {
             let err_result = TxResult::from_vm_error("ESDTNFTBurn expects 3 arguments");
-            return (err_result, BlockchainUpdate::empty());
+            return Ok((err_result, BlockchainUpdate::empty()));
         }
 
         let token_identifier = tx_input.args[0].clone();
@@ -35,9 +35,9 @@ impl BuiltinFunction for ESDTNftBurn {
         let value = BigUint::from_bytes_be(tx_input.args[2].as_slice());
 
         let subtract_result =
-            tx_cache.subtract_esdt_balance(&tx_input.to, &token_identifier, nonce, &value);
+            tx_cache.subtract_esdt_balance(&tx_input.to, &token_identifier, nonce, &value)?;
         if let Err(err) = subtract_result {
-            return (TxResult::from_panic_obj(&err), BlockchainUpdate::empty());
+            return Ok((TxResult::from_panic_obj(&err), BlockchainUpdate::empty()));
         }
 
         let esdt_nft_create_log = TxLog {
@@ -57,6 +57,6 @@ impl BuiltinFunction for ESDTNftBurn {
             ..Default::default()
         };
 
-        (tx_result, tx_cache.into_blockchain_updates())
+        Ok((tx_result, tx_cache.into_blockchain_updates()))
     }
 }

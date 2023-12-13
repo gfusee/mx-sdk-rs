@@ -25,9 +25,9 @@ pub trait BuiltinFunction {
         tx_cache: TxCache,
         vm: &BlockchainVMRef,
         lambda: F,
-    ) -> (TxResult, BlockchainUpdate)
+    ) -> anyhow::Result<(TxResult, BlockchainUpdate)>
     where
-        F: FnOnce();
+        F: FnOnce() -> anyhow::Result<()>;
 }
 
 /// Contains a builtin function call ESDT transfers (if any) and the real recipient of the transfer

@@ -1,4 +1,5 @@
 use multiversx_sc_scenario::*;
+use multiversx_sc_scenario::scenario_model::ScCallStep;
 
 // These tests don't really test any contract, but the testing framework itslef.
 
@@ -169,4 +170,12 @@ fn transfer_esdt_rs() {
 #[test]
 fn validator_reward_rs() {
     world().run("tests/scenarios-self/validatorReward.scen.json");
+}
+
+#[test]
+fn call_unknown_contract() {
+    let error = world().run("tests/scenarios-self/call-unknown-contract-err.scen.json")
+        .unwrap_err();
+
+    assert_eq!(error.to_string(), "Account 0x00000000000000000000756e6b6e6f776e5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f not found");
 }

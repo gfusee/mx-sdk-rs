@@ -1,3 +1,4 @@
+use anyhow::bail;
 use crate::{
     debug_executor::ContractMapRef,
     multiversx_chain_vm::BlockchainMock,
@@ -24,51 +25,67 @@ impl ScenarioVMRunner {
 }
 
 impl ScenarioRunner for ScenarioVMRunner {
-    fn run_external_steps(&mut self, _step: &ExternalStepsStep) {
-        panic!("cannot call directly as such")
+    fn run_external_steps(&mut self, _step: &ExternalStepsStep) -> anyhow::Result<()> {
+        bail!("cannot call directly as such")
     }
 
-    fn run_set_state_step(&mut self, step: &SetStateStep) {
+    fn run_set_state_step(&mut self, step: &SetStateStep) -> anyhow::Result<()> {
         self.perform_set_state(step);
+
+        Ok(())
     }
 
-    fn run_sc_call_step(&mut self, step: &mut ScCallStep) {
-        self.perform_sc_call_update_results(step);
+    fn run_sc_call_step(&mut self, step: &mut ScCallStep) -> anyhow::Result<()> {
+        self.perform_sc_call_update_results(step)
     }
 
-    fn run_multi_sc_call_step(&mut self, steps: &mut [ScCallStep]) {
+    fn run_multi_sc_call_step(&mut self, steps: &mut [ScCallStep]) -> anyhow::Result<()> {
         for step in steps {
-            self.perform_sc_call_update_results(step);
+            self.perform_sc_call_update_results(step)?;
         }
+
+        Ok(())
     }
 
-    fn run_multi_sc_deploy_step(&mut self, steps: &mut [ScDeployStep]) {
+    fn run_multi_sc_deploy_step(&mut self, steps: &mut [ScDeployStep]) -> anyhow::Result<()> {
         for step in steps.iter_mut() {
-            self.perform_sc_deploy_update_results(step);
+            self.perform_sc_deploy_update_results(step)?;
         }
+
+        Ok(())
     }
 
-    fn run_sc_query_step(&mut self, step: &mut ScQueryStep) {
+    fn run_sc_query_step(&mut self, step: &mut ScQueryStep) -> anyhow::Result<()> {
         self.perform_sc_query_update_results(step);
+
+        Ok(())
     }
 
-    fn run_sc_deploy_step(&mut self, step: &mut ScDeployStep) {
-        self.perform_sc_deploy_update_results(step);
+    fn run_sc_deploy_step(&mut self, step: &mut ScDeployStep) -> anyhow::Result<()> {
+        self.perform_sc_deploy_update_results(step)
     }
 
-    fn run_transfer_step(&mut self, step: &TransferStep) {
+    fn run_transfer_step(&mut self, step: &TransferStep) -> anyhow::Result<()> {
         self.perform_transfer(step);
+
+        Ok(())
     }
 
-    fn run_validator_reward_step(&mut self, step: &ValidatorRewardStep) {
+    fn run_validator_reward_step(&mut self, step: &ValidatorRewardStep) -> anyhow::Result<()> {
         self.perform_validator_reward(step);
+
+        Ok(())
     }
 
-    fn run_check_state_step(&mut self, step: &CheckStateStep) {
+    fn run_check_state_step(&mut self, step: &CheckStateStep) -> anyhow::Result<()> {
         self.perform_check_state(step);
+
+        Ok(())
     }
 
-    fn run_dump_state_step(&mut self) {
+    fn run_dump_state_step(&mut self) -> anyhow::Result<()> {
         self.perform_dump_state();
+
+        Ok(())
     }
 }

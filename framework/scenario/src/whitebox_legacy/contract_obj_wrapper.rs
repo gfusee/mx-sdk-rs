@@ -591,7 +591,7 @@ impl BlockchainStateWrapper {
         sc_wrapper: &ContractObjWrapper<CB, ContractObjBuilder>,
         egld_payment: &num_bigint::BigUint,
         tx_fn: TxFn,
-    ) -> TxResult
+    ) -> anyhow::Result<TxResult>
     where
         CB: ContractBase<Api = DebugApi> + CallableContract + 'static,
         ContractObjBuilder: 'static + Copy + Fn() -> CB,
@@ -608,7 +608,7 @@ impl BlockchainStateWrapper {
         esdt_nonce: u64,
         esdt_amount: &num_bigint::BigUint,
         tx_fn: TxFn,
-    ) -> TxResult
+    ) -> anyhow::Result<TxResult>
     where
         CB: ContractBase<Api = DebugApi> + CallableContract + 'static,
         ContractObjBuilder: 'static + Copy + Fn() -> CB,
@@ -634,7 +634,7 @@ impl BlockchainStateWrapper {
         sc_wrapper: &ContractObjWrapper<CB, ContractObjBuilder>,
         esdt_transfers: &[TxTokenTransfer],
         tx_fn: TxFn,
-    ) -> TxResult
+    ) -> anyhow::Result<TxResult>
     where
         CB: ContractBase<Api = DebugApi> + CallableContract + 'static,
         ContractObjBuilder: 'static + Copy + Fn() -> CB,
@@ -653,7 +653,7 @@ impl BlockchainStateWrapper {
         &mut self,
         sc_wrapper: &ContractObjWrapper<CB, ContractObjBuilder>,
         query_fn: TxFn,
-    ) -> TxResult
+    ) -> anyhow::Result<TxResult>
     where
         CB: ContractBase<Api = DebugApi> + CallableContract + 'static,
         ContractObjBuilder: 'static + Copy + Fn() -> CB,
@@ -675,7 +675,7 @@ impl BlockchainStateWrapper {
         egld_payment: &num_bigint::BigUint,
         esdt_payments: Vec<TxTokenTransfer>,
         tx_fn: TxFn,
-    ) -> TxResult
+    ) -> anyhow::Result<TxResult>
     where
         CB: ContractBase<Api = DebugApi> + CallableContract + 'static,
         ContractObjBuilder: 'static + Copy + Fn() -> CB,
@@ -700,7 +700,7 @@ impl BlockchainStateWrapper {
         }
 
         let sc = (sc_wrapper.obj_builder)();
-        let tx_result = self
+        self
             .world
             .get_mut_debugger_backend()
             .vm_runner
@@ -709,9 +709,9 @@ impl BlockchainStateWrapper {
                     tx_fn(sc);
                     Ok(())
                 });
-            });
 
-        tx_result
+                Ok(())
+            })
     }
 
     pub fn execute_in_managed_environment<T, F>(&self, f: F) -> T

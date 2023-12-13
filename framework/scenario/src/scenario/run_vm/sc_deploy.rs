@@ -13,21 +13,23 @@ impl ScenarioVMRunner {
     /// Adds a SC deploy step, as specified in the `step` argument, then executes it.
     ///
     /// The result of the operation gets saved back in the step's response field.
-    pub fn perform_sc_deploy_update_results(&mut self, step: &mut ScDeployStep) {
+    pub fn perform_sc_deploy_update_results(&mut self, step: &mut ScDeployStep) -> anyhow::Result<()> {
         let (new_address, tx_result) =
-            self.perform_sc_deploy_lambda_and_check(step, execute_current_tx_context_input);
+            self.perform_sc_deploy_lambda_and_check(step, execute_current_tx_context_input)?;
         let mut response = TxResponse::from_tx_result(tx_result);
         response.new_deployed_address = Some(new_address);
         step.save_response(response);
+
+        Ok(())
     }
 
     pub fn perform_sc_deploy_lambda<F>(
         &mut self,
         sc_deploy_step: &ScDeployStep,
         f: F,
-    ) -> (Address, TxResult)
+    ) -> anyhow::Result<(Address, TxResult)>
     where
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
         let tx_input = tx_input_from_deploy(sc_deploy_step);
         let contract_code = &sc_deploy_step.tx.contract_code.value;
@@ -36,27 +38,27 @@ impl ScenarioVMRunner {
             contract_code,
             &mut self.blockchain_mock.state,
             f,
-        );
+        )?;
         assert!(
             tx_result.pending_calls.no_calls(),
             "Async calls from constructors are currently not supported"
         );
-        (new_address.as_array().into(), tx_result)
+        Ok((new_address.as_array().into(), tx_result))
     }
 
     pub fn perform_sc_deploy_lambda_and_check<F>(
         &mut self,
         sc_deploy_step: &ScDeployStep,
         f: F,
-    ) -> (Address, TxResult)
+    ) -> anyhow::Result<(Address, TxResult)>
     where
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
-        let (new_address, tx_result) = self.perform_sc_deploy_lambda(sc_deploy_step, f);
+        let (new_address, tx_result) = self.perform_sc_deploy_lambda(sc_deploy_step, f)?;
         if let Some(tx_expect) = &sc_deploy_step.expect {
             check_tx_output(&sc_deploy_step.id, tx_expect, &tx_result);
         }
-        (new_address, tx_result)
+        Ok((new_address, tx_result))
     }
 }
 

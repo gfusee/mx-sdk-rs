@@ -36,18 +36,18 @@ impl TxContextStack {
     /// Manages the stack.
     ///
     /// Pushes the context to the stack, executes closure, pops after.
-    pub fn execute_on_vm_stack<F, R>(tx_context_sh: &mut Shareable<TxContext>, f: F) -> R
+    pub fn execute_on_vm_stack<F, R>(tx_context_sh: &mut Shareable<TxContext>, f: F) -> anyhow::Result<R>
     where
-        F: FnOnce() -> R,
+        F: FnOnce() -> anyhow::Result<R>,
     {
-        tx_context_sh.with_shared(|tx_context_arc| {
+        tx_context_sh.with_shared(|tx_context_arc| -> anyhow::Result<R> {
             TxContextStack::static_push(tx_context_arc);
 
-            let result = f();
+            let result = f()?;
 
             let _ = TxContextStack::static_pop();
 
-            result
+            Ok(result)
         })
     }
 }

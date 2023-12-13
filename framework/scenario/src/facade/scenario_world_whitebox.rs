@@ -14,7 +14,7 @@ impl ScenarioWorld {
         &mut self,
         whitebox_contract: &WhiteboxContract<ContractObj>,
         f: F,
-    ) -> &mut Self
+    ) -> anyhow::Result<&mut Self>
     where
         ContractObj: ContractBase<Api = DebugApi> + CallableContract + 'static,
         F: FnOnce(ContractObj),
@@ -29,7 +29,7 @@ impl ScenarioWorld {
         whitebox_contract: &WhiteboxContract<ContractObj>,
         f: F,
         check_result: C,
-    ) -> &mut Self
+    ) -> anyhow::Result<&mut Self>
     where
         ContractObj: ContractBase<Api = DebugApi> + CallableContract + 'static,
         F: FnOnce(ContractObj),
@@ -44,10 +44,12 @@ impl ScenarioWorld {
                 catch_whitebox_panic(|| {
                     f(contract_obj);
                 });
-            });
+
+                Ok(())
+            })?;
         check_result(tx_result);
 
-        self
+        Ok(self)
     }
 
     pub fn whitebox_call<ContractObj, F>(
@@ -55,7 +57,7 @@ impl ScenarioWorld {
         whitebox_contract: &WhiteboxContract<ContractObj>,
         sc_call_step: ScCallStep,
         f: F,
-    ) -> &mut Self
+    ) -> anyhow::Result<&mut Self>
     where
         ContractObj: ContractBase<Api = DebugApi> + CallableContract + 'static,
         F: FnOnce(ContractObj),
@@ -71,7 +73,7 @@ impl ScenarioWorld {
         sc_call_step: ScCallStep,
         f: F,
         check_result: C,
-    ) -> &mut Self
+    ) -> anyhow::Result<&mut Self>
     where
         ContractObj: ContractBase<Api = DebugApi> + CallableContract + 'static,
         F: FnOnce(ContractObj),
@@ -94,9 +96,11 @@ impl ScenarioWorld {
                     catch_whitebox_panic(|| {
                         f(contract_obj);
                     });
-                });
+
+                    Ok(())
+                })?;
         check_result(tx_result);
-        self
+        Ok(self)
     }
 
     pub fn whitebox_deploy<ContractObj, F>(
@@ -104,7 +108,7 @@ impl ScenarioWorld {
         whitebox_contract: &WhiteboxContract<ContractObj>,
         sc_deploy_step: ScDeployStep,
         f: F,
-    ) -> &mut Self
+    ) -> anyhow::Result<&mut Self>
     where
         ContractObj: ContractBase<Api = DebugApi> + CallableContract + 'static,
         F: FnOnce(ContractObj),
@@ -120,7 +124,7 @@ impl ScenarioWorld {
         sc_deploy_step: ScDeployStep,
         f: F,
         check_result: C,
-    ) -> &mut Self
+    ) -> anyhow::Result<&mut Self>
     where
         ContractObj: ContractBase<Api = DebugApi> + CallableContract + 'static,
         F: FnOnce(ContractObj),
@@ -134,9 +138,11 @@ impl ScenarioWorld {
                 catch_whitebox_panic(|| {
                     f(contract_obj);
                 });
-            });
+
+                Ok(())
+            })?;
         check_result(tx_result);
-        self
+        Ok(self)
     }
 }
 

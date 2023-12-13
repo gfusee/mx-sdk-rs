@@ -19,13 +19,13 @@ impl BuiltinFunction for ESDTNftAddUri {
         tx_cache: TxCache,
         _vm: &BlockchainVMRef,
         _f: F,
-    ) -> (TxResult, BlockchainUpdate)
+    ) -> anyhow::Result<(TxResult, BlockchainUpdate)>
     where
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
         if tx_input.args.len() < 3 {
             let err_result = TxResult::from_vm_error("ESDTNFTAddURI expects at least 3 arguments");
-            return (err_result, BlockchainUpdate::empty());
+            return Ok((err_result, BlockchainUpdate::empty()));
         }
 
         let token_identifier = tx_input.args[0].clone();
@@ -36,7 +36,7 @@ impl BuiltinFunction for ESDTNftAddUri {
             account
                 .esdt
                 .add_uris(token_identifier.as_slice(), nonce, new_uris.clone());
-        });
+        })?;
 
         let mut topics = vec![
             token_identifier.to_vec(),
@@ -57,6 +57,6 @@ impl BuiltinFunction for ESDTNftAddUri {
             ..Default::default()
         };
 
-        (tx_result, tx_cache.into_blockchain_updates())
+        Ok((tx_result, tx_cache.into_blockchain_updates()))
     }
 }

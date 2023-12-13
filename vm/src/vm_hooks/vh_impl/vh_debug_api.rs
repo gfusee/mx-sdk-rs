@@ -60,7 +60,7 @@ impl VMHooksHandlerSource for DebugApiVMHooksHandler {
     fn storage_read_any_address(&self, address: &VMAddress, key: &[u8]) -> Vec<u8> {
         self.0.with_account_mut(address, |account| {
             account.storage.get(key).cloned().unwrap_or_default()
-        })
+        }).unwrap()
     }
 
     fn storage_write(&self, key: &[u8], value: &[u8]) {
@@ -68,7 +68,7 @@ impl VMHooksHandlerSource for DebugApiVMHooksHandler {
 
         self.0.with_contract_account_mut(|account| {
             account.storage.insert(key.to_vec(), value.to_vec());
-        });
+        }).unwrap();
     }
 
     fn get_previous_block_info(&self) -> &BlockInfo {
@@ -84,13 +84,14 @@ impl VMHooksHandlerSource for DebugApiVMHooksHandler {
     }
 
     fn account_data(&self, address: &VMAddress) -> AccountData {
-        self.0.with_account(address, |account| account.clone())
+        self.0.with_account(address, |account| account.clone()).unwrap()
     }
 
     fn account_code(&self, address: &VMAddress) -> Vec<u8> {
         self.0
             .blockchain_cache()
             .with_account(address, |account| account.contract_path.clone())
+            .unwrap()
             .unwrap_or_else(|| panic!("Account is not a smart contract, it has no code"))
     }
 
@@ -124,7 +125,7 @@ impl VMHooksHandlerSource for DebugApiVMHooksHandler {
             tx_input,
             tx_cache,
             execute_current_tx_context_input,
-        );
+        ).unwrap();
 
         if tx_result.result_status == 0 {
             self.sync_call_post_processing(tx_result, blockchain_updates)
@@ -157,13 +158,13 @@ impl VMHooksHandlerSource for DebugApiVMHooksHandler {
         };
 
         let tx_cache = TxCache::new(self.0.blockchain_cache_arc());
-        tx_cache.increase_acount_nonce(contract_address);
+        tx_cache.increase_acount_nonce(contract_address).unwrap();
         let (tx_result, new_address, blockchain_updates) = self.0.vm_ref.deploy_contract(
             tx_input,
             contract_code,
             tx_cache,
             execute_current_tx_context_input,
-        );
+        ).unwrap();
 
         match tx_result.result_status {
             0 => (
@@ -189,7 +190,7 @@ impl VMHooksHandlerSource for DebugApiVMHooksHandler {
             tx_input,
             tx_cache,
             execute_current_tx_context_input,
-        );
+        ).unwrap();
 
         match tx_result.result_status {
             0 => {

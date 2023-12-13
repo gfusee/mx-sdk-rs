@@ -65,15 +65,15 @@ impl ScenarioWorld {
     /// Runs a scenario file (`.scen.json`) with the configured backend.
     ///
     /// Will crash and produce an output if the test failed for any reason.
-    pub fn run<P: AsRef<Path>>(self, relative_path: P) {
+    pub fn run<P: AsRef<Path>>(self, relative_path: P) -> anyhow::Result<()> {
         let mut absolute_path = self.current_dir.clone();
         absolute_path.push(relative_path);
         match self.backend {
             Backend::Debugger(mut debugger) => {
-                debugger.run_scenario_file(&absolute_path);
+                debugger.run_scenario_file(&absolute_path)
             },
             Backend::VmGoBackend => {
-                run_vm_go_tool(&absolute_path);
+                run_vm_go_tool(&absolute_path)
             },
         }
     }

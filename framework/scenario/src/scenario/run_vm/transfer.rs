@@ -38,12 +38,14 @@ fn tx_input_from_transfer(tx_transfer: &TxTransfer) -> TxInput {
     }
 }
 
-fn execute(vm: BlockchainVMRef, state: &mut Shareable<BlockchainState>, tx_transfer: &TxTransfer) {
+fn execute(vm: BlockchainVMRef, state: &mut Shareable<BlockchainState>, tx_transfer: &TxTransfer) -> anyhow::Result<()> {
     let tx_input = tx_input_from_transfer(tx_transfer);
 
     // nonce gets increased irrespective of whether the tx fails or not
     state.increase_account_nonce(&tx_input.from);
 
-    let tx_result = vm.execute_sc_call_lambda(tx_input, state, execute_current_tx_context_input);
+    let tx_result = vm.execute_sc_call_lambda(tx_input, state, execute_current_tx_context_input)?;
     tx_result.assert_ok();
+
+    Ok(())
 }

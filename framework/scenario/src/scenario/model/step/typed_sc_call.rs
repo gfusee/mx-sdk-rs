@@ -148,7 +148,7 @@ pub trait TypedScCallExecutor {
     fn execute_typed_sc_call<OriginalResult, RequestedResult>(
         &mut self,
         typed_sc_call: TypedScCall<OriginalResult>,
-    ) -> RequestedResult
+    ) -> anyhow::Result<RequestedResult>
     where
         OriginalResult: TopEncodeMulti,
         RequestedResult: CodecFrom<OriginalResult>;
@@ -162,7 +162,7 @@ where
     pub fn execute<E: TypedScCallExecutor, RequestedResult>(
         self,
         executor: &mut E,
-    ) -> RequestedResult
+    ) -> anyhow::Result<RequestedResult>
     where
         RequestedResult: CodecFrom<OriginalResult>,
     {

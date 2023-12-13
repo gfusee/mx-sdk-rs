@@ -17,14 +17,16 @@ impl BuiltinFunction for SetUsername {
         tx_cache: TxCache,
         _vm: &BlockchainVMRef,
         _f: F,
-    ) -> (TxResult, BlockchainUpdate)
+    ) -> anyhow::Result<(TxResult, BlockchainUpdate)>
     where
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
         if tx_input.args.len() != 1 {
-            return (
-                TxResult::from_vm_error("SetUserName expects 1 argument"),
-                BlockchainUpdate::empty(),
+            return Ok(
+                (
+                    TxResult::from_vm_error("SetUserName expects 1 argument"),
+                    BlockchainUpdate::empty(),
+                )
             );
         }
 
@@ -36,14 +38,16 @@ impl BuiltinFunction for SetUsername {
             } else {
                 false
             }
-        });
+        })?;
 
         if success {
-            (TxResult::empty(), tx_cache.into_blockchain_updates())
+            Ok((TxResult::empty(), tx_cache.into_blockchain_updates()))
         } else {
-            (
-                TxResult::from_vm_error("SetUserName expects 1 argument"),
-                BlockchainUpdate::empty(),
+            Ok(
+                (
+                    TxResult::from_vm_error("SetUserName expects 1 argument"),
+                    BlockchainUpdate::empty(),
+                )
             )
         }
     }

@@ -22,22 +22,24 @@ impl BuiltinFunction for ChangeOwner {
         tx_cache: TxCache,
         _vm: &BlockchainVMRef,
         _f: F,
-    ) -> (TxResult, BlockchainUpdate)
+    ) -> anyhow::Result<(TxResult, BlockchainUpdate)>
     where
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
         if tx_input.args.len() != 1 {
-            return (
-                TxResult::from_vm_error("ChangeOwnerAddress expects 1 argument"),
-                BlockchainUpdate::empty(),
+            return Ok(
+                (
+                    TxResult::from_vm_error("ChangeOwnerAddress expects 1 argument"),
+                    BlockchainUpdate::empty(),
+                )
             );
         }
 
         let new_owner_address = VMAddress::from_slice(&tx_input.args[0]);
         tx_cache.with_account_mut(&tx_input.to, |account| {
             account.contract_owner = Some(new_owner_address);
-        });
+        })?;
 
-        (TxResult::empty(), tx_cache.into_blockchain_updates())
+        Ok((TxResult::empty(), tx_cache.into_blockchain_updates()))
     }
 }

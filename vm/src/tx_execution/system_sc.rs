@@ -2,6 +2,7 @@ mod system_sc_issue;
 mod system_sc_special_roles;
 mod system_sc_unimplemented;
 
+use anyhow::bail;
 use crate::{
     tx_mock::{BlockchainUpdate, TxCache, TxInput, TxResult},
     types::VMAddress,
@@ -20,15 +21,15 @@ pub fn is_system_sc_address(address: &VMAddress) -> bool {
     address.as_array() == &ESDT_SYSTEM_SC_ADDRESS_ARRAY
 }
 
-pub fn execute_system_sc(tx_input: TxInput, tx_cache: TxCache) -> (TxResult, BlockchainUpdate) {
+pub fn execute_system_sc(tx_input: TxInput, tx_cache: TxCache) -> anyhow::Result<(TxResult, BlockchainUpdate)> {
     let func_name = &tx_input.func_name;
-    match func_name.as_str() {
-        "issue" => issue(tx_input, tx_cache),
-        "issueSemiFungible" => issue_semi_fungible(tx_input, tx_cache),
-        "issueNonFungible" => issue_non_fungible(tx_input, tx_cache),
+    let result = match func_name.as_str() {
+        "issue" => issue(tx_input, tx_cache)?,
+        "issueSemiFungible" => issue_semi_fungible(tx_input, tx_cache)?,
+        "issueNonFungible" => issue_non_fungible(tx_input, tx_cache)?,
         "registerMetaESDT" => register_meta_esdt(tx_input, tx_cache),
         "changeSFTToMetaESDT" => change_sft_to_meta_esdt(tx_input, tx_cache),
-        "registerAndSetAllRoles" => register_and_set_all_roles(tx_input, tx_cache),
+        "registerAndSetAllRoles" => register_and_set_all_roles(tx_input, tx_cache)?,
         "ESDTBurn" => esdt_burn(tx_input, tx_cache),
         "mint" => mint(tx_input, tx_cache),
         "freeze" => freeze(tx_input, tx_cache),
@@ -45,7 +46,7 @@ pub fn execute_system_sc(tx_input: TxInput, tx_cache: TxCache) -> (TxResult, Blo
         "transferOwnership" => transfer_ownership(tx_input, tx_cache),
         "getTokenProperties" => get_token_properties(tx_input, tx_cache),
         "getSpecialRoles" => get_special_roles(tx_input, tx_cache),
-        "setSpecialRole" => set_special_role(tx_input, tx_cache),
+        "setSpecialRole" => set_special_role(tx_input, tx_cache)?,
         "unSetSpecialRole" => unset_special_role(tx_input, tx_cache),
         "transferNFTCreateRole" => transfer_nft_create_role(tx_input, tx_cache),
         "stopNFTCreate" => stop_nft_create(tx_input, tx_cache),
@@ -55,6 +56,8 @@ pub fn execute_system_sc(tx_input: TxInput, tx_cache: TxCache) -> (TxResult, Blo
         "setBurnRoleGlobally" => set_burn_role_globally(tx_input, tx_cache),
         "unsetBurnRoleGlobally" => unset_burn_role_globally(tx_input, tx_cache),
         "sendAllTransferRoleAddresses" => send_all_transfer_role_addresses(tx_input, tx_cache),
-        invalid_func_name => panic!("invalid system SC function: {invalid_func_name}"),
-    }
+        invalid_func_name => bail!("invalid system SC function: {invalid_func_name}"),
+    };
+
+    Ok(result)
 }

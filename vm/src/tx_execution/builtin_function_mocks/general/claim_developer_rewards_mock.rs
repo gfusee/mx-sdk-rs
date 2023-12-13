@@ -21,14 +21,16 @@ impl BuiltinFunction for ClaimDeveloperRewards {
         tx_cache: TxCache,
         _vm: &BlockchainVMRef,
         _f: F,
-    ) -> (TxResult, BlockchainUpdate)
+    ) -> anyhow::Result<(TxResult, BlockchainUpdate)>
     where
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
         if !tx_input.args.is_empty() {
-            return (
-                TxResult::from_vm_error("ClaimDeveloperRewards expects no arguments"),
-                BlockchainUpdate::empty(),
+            return Ok(
+                (
+                    TxResult::from_vm_error("ClaimDeveloperRewards expects no arguments"),
+                    BlockchainUpdate::empty(),
+                )
             );
         }
 
@@ -41,15 +43,17 @@ impl BuiltinFunction for ClaimDeveloperRewards {
                 account.developer_rewards = BigUint::zero();
                 caller_is_owner = true;
             }
-        });
+        })?;
 
         if caller_is_owner {
-            tx_cache.increase_egld_balance(&tx_input.from, &developer_rewards);
-            (TxResult::empty(), tx_cache.into_blockchain_updates())
+            tx_cache.increase_egld_balance(&tx_input.from, &developer_rewards)?;
+            Ok((TxResult::empty(), tx_cache.into_blockchain_updates()))
         } else {
-            (
-                TxResult::from_vm_error("operation in account not permitted"),
-                BlockchainUpdate::empty(),
+            Ok(
+                (
+                    TxResult::from_vm_error("operation in account not permitted"),
+                    BlockchainUpdate::empty(),
+                )
             )
         }
     }

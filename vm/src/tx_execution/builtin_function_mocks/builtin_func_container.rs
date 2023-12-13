@@ -31,10 +31,10 @@ impl BuiltinFunctionContainer {
         tx_cache: TxCache,
         f: F,
         or_else: Else,
-    ) -> (TxResult, BlockchainUpdate)
+    ) -> anyhow::Result<(TxResult, BlockchainUpdate)>
     where
-        F: FnOnce(),
-        Else: FnOnce(TxInput, TxCache, F) -> (TxResult, BlockchainUpdate),
+        F: FnOnce() -> anyhow::Result<()>,
+        Else: FnOnce(TxInput, TxCache, F) -> anyhow::Result<(TxResult, BlockchainUpdate)>,
     {
         BuiltinFunctionCall::new(vm, tx_input, tx_cache).execute_or_else(f, or_else)
     }
@@ -74,10 +74,10 @@ impl<'a> BuiltinFunctionCall<'a> {
         }
     }
 
-    pub fn execute_or_else<F, Else>(self, f: F, or_else: Else) -> (TxResult, BlockchainUpdate)
+    pub fn execute_or_else<F, Else>(self, f: F, or_else: Else) -> anyhow::Result<(TxResult, BlockchainUpdate)>
     where
-        F: FnOnce(),
-        Else: FnOnce(TxInput, TxCache, F) -> (TxResult, BlockchainUpdate),
+        F: FnOnce() -> anyhow::Result<()>,
+        Else: FnOnce(TxInput, TxCache, F) -> anyhow::Result<(TxResult, BlockchainUpdate)>,
     {
         match self.tx_input.func_name.as_str() {
             ESDT_LOCAL_MINT_FUNC_NAME => {
@@ -119,10 +119,10 @@ impl<'a> BuiltinFunctionCall<'a> {
         }
     }
 
-    fn execute_bf<B, F>(self, builtin_func: B, f: F) -> (TxResult, BlockchainUpdate)
+    fn execute_bf<B, F>(self, builtin_func: B, f: F) -> anyhow::Result<(TxResult, BlockchainUpdate)>
     where
         B: BuiltinFunction,
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
         builtin_func.execute(self.tx_input, self.tx_cache, self.vm, f)
     }
@@ -132,28 +132,33 @@ impl<'a> BuiltinFunctionCall<'a> {
         role: EsdtLocalRole,
         builtin_func: B,
         f: F,
-    ) -> (TxResult, BlockchainUpdate)
+    ) -> anyhow::Result<(TxResult, BlockchainUpdate)>
     where
         B: BuiltinFunction,
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
-        if check_allowed_to_execute(role, &self.tx_input, &self.tx_cache) {
+        if check_allowed_to_execute(role, &self.tx_input, &self.tx_cache)? {
             self.execute_bf(builtin_func, f)
         } else {
-            (
-                TxResult::from_vm_error("action is not allowed"),
-                BlockchainUpdate::empty(),
+            Ok(
+                (
+                    TxResult::from_vm_error("action is not allowed"),
+                    BlockchainUpdate::empty(),
+                )
             )
         }
     }
 }
 
-fn check_allowed_to_execute(role: EsdtLocalRole, tx_input: &TxInput, tx_cache: &TxCache) -> bool {
+fn check_allowed_to_execute(role: EsdtLocalRole, tx_input: &TxInput, tx_cache: &TxCache) -> anyhow::Result<bool> {
     let token_identifier = tx_input.args[0].clone();
     let available_roles = tx_cache.with_account_mut(&tx_input.to, |account| {
         account.esdt.get_roles(&token_identifier)
-    });
-    available_roles
-        .iter()
-        .any(|available_role| available_role.as_slice() == role.name().as_bytes())
+    })?;
+
+    Ok(
+        available_roles
+            .iter()
+            .any(|available_role| available_role.as_slice() == role.name().as_bytes())
+    )
 }

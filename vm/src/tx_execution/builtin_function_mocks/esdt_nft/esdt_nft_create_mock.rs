@@ -22,13 +22,13 @@ impl BuiltinFunction for ESDTNftCreate {
         tx_cache: TxCache,
         _vm: &BlockchainVMRef,
         _f: F,
-    ) -> (TxResult, BlockchainUpdate)
+    ) -> anyhow::Result<(TxResult, BlockchainUpdate)>
     where
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
         if tx_input.args.len() < 7 {
             let err_result = TxResult::from_vm_error("ESDTNFTCreate too few arguments");
-            return (err_result, BlockchainUpdate::empty());
+            return Ok((err_result, BlockchainUpdate::empty()));
         }
         assert!(
             tx_input.to == tx_input.from,
@@ -63,7 +63,7 @@ impl BuiltinFunction for ESDTNftCreate {
             });
 
             esdt_data.last_nonce
-        });
+        })?;
 
         let esdt_nft_create_log = TxLog {
             address: tx_input.from.clone(),
@@ -84,6 +84,6 @@ impl BuiltinFunction for ESDTNftCreate {
             ..Default::default()
         };
 
-        (tx_result, tx_cache.into_blockchain_updates())
+        Ok((tx_result, tx_cache.into_blockchain_updates()))
     }
 }

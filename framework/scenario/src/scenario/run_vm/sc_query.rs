@@ -10,39 +10,41 @@ impl ScenarioVMRunner {
     /// Adds a SC query step, as specified in the `sc_query_step` argument, then executes it.
     ///
     /// The result of the operation gets saved back in the step's response field.
-    pub fn perform_sc_query_update_results(&mut self, step: &mut ScQueryStep) {
+    pub fn perform_sc_query_update_results(&mut self, step: &mut ScQueryStep) -> anyhow::Result<()> {
         let tx_result =
-            self.perform_sc_query_lambda_and_check(step, execute_current_tx_context_input);
+            self.perform_sc_query_lambda_and_check(step, execute_current_tx_context_input)?;
         let response = TxResponse::from_tx_result(tx_result);
         step.save_response(response);
+
+        Ok(())
     }
 
-    pub fn perform_sc_query_lambda<F>(&mut self, step: &ScQueryStep, f: F) -> TxResult
+    pub fn perform_sc_query_lambda<F>(&mut self, step: &ScQueryStep, f: F) -> anyhow::Result<TxResult>
     where
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
         let tx_input = tx_input_from_query(step);
         let tx_result = self.blockchain_mock.vm.execute_sc_query_lambda(
             tx_input,
             &mut self.blockchain_mock.state,
             f,
-        );
+        )?;
         assert!(
             tx_result.pending_calls.no_calls(),
             "Can't query a view function that performs an async call"
         );
-        tx_result
+        Ok(tx_result)
     }
 
-    pub fn perform_sc_query_lambda_and_check<F>(&mut self, step: &ScQueryStep, f: F) -> TxResult
+    pub fn perform_sc_query_lambda_and_check<F>(&mut self, step: &ScQueryStep, f: F) -> anyhow::Result<TxResult>
     where
-        F: FnOnce(),
+        F: FnOnce() -> anyhow::Result<()>,
     {
-        let tx_result = self.perform_sc_query_lambda(step, f);
+        let tx_result = self.perform_sc_query_lambda(step, f)?;
         if let Some(tx_expect) = &step.expect {
             check_tx_output(&step.id, tx_expect, &tx_result);
         }
-        tx_result
+        Ok(tx_result)
     }
 }
 
