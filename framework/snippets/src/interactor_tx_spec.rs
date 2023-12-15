@@ -27,7 +27,7 @@ impl TransactionSpec for ScCallStep {
 
     fn run_step(&mut self, step_runner: &mut dyn ScenarioRunner) {
         let mut clone = self.clone();
-        step_runner.run_sc_call_step(&mut clone); // TODO: make mutability uniform
+        step_runner.run_sc_call_step(&mut clone).unwrap(); // TODO: make mutability uniform
     }
 
     fn set_response(&mut self, response: TxResponse) {
@@ -45,7 +45,7 @@ impl TransactionSpec for ScDeployStep {
     }
 
     fn run_step(&mut self, step_runner: &mut dyn ScenarioRunner) {
-        step_runner.run_sc_deploy_step(self);
+        step_runner.run_sc_deploy_step(self).unwrap();
     }
 
     fn set_response(&mut self, response: TxResponse) {

@@ -48,7 +48,7 @@ struct PriceAggregatorTestState {
 }
 
 impl PriceAggregatorTestState {
-    fn new() -> Self {
+    fn new() -> anyhow::Result<Self> {
         let mut world = world();
 
         let mut set_state_step = SetStateStep::new()
@@ -68,7 +68,7 @@ impl PriceAggregatorTestState {
 
             oracles.push(address_value);
         }
-        world.start_trace().set_state_step(set_state_step);
+        world.start_trace().set_state_step(set_state_step)?;
 
         let price_aggregator_contract = PriceAggregatorContract::new(PRICE_AGGREGATOR_ADDRESS_EXPR);
         let price_aggregator_whitebox = WhiteboxContract::new(
@@ -76,15 +76,17 @@ impl PriceAggregatorTestState {
             multiversx_price_aggregator_sc::contract_obj,
         );
 
-        Self {
-            world,
-            oracles,
-            price_aggregator_contract,
-            price_aggregator_whitebox,
-        }
+        Ok(
+            Self {
+                world,
+                oracles,
+                price_aggregator_contract,
+                price_aggregator_whitebox,
+            }
+        )
     }
 
-    fn deploy(&mut self) -> &mut Self {
+    fn deploy(&mut self) -> anyhow::Result<&mut Self> {
         let price_aggregator_code = self.world.code_expression(PRICE_AGGREGATOR_PATH_EXPR);
 
         let oracles = MultiValueVec::from(
@@ -107,7 +109,7 @@ impl PriceAggregatorTestState {
                     oracles,
                 ))
                 .gas_limit("120,000,000"),
-        );
+        )?;
 
         for address in self.oracles.iter() {
             self.world.sc_call(
@@ -116,31 +118,35 @@ impl PriceAggregatorTestState {
                     .egld_value(STAKE_AMOUNT)
                     .call(self.price_aggregator_contract.stake())
                     .gas_limit("5,000,000"),
-            );
+            )?;
         }
 
-        self
+        Ok(self)
     }
 
-    fn set_pair_decimals(&mut self) {
+    fn set_pair_decimals(&mut self) -> anyhow::Result<()> {
         self.world.sc_call(
             ScCallStep::new().from(OWNER_ADDRESS_EXPR).call(
                 self.price_aggregator_contract
                     .set_pair_decimals(EGLD_TICKER, USD_TICKER, DECIMALS),
             ),
-        );
+        )?;
+
+        Ok(())
     }
 
-    fn unpause_endpoint(&mut self) {
+    fn unpause_endpoint(&mut self) -> anyhow::Result<()> {
         self.world.sc_call(
             ScCallStep::new()
                 .from(OWNER_ADDRESS_EXPR)
                 .call(self.price_aggregator_contract.unpause_endpoint())
                 .gas_limit("5,000,000"),
-        );
+        )?;
+
+        Ok(())
     }
 
-    fn submit(&mut self, from: &AddressValue, submission_timestamp: u64, price: u64) {
+    fn submit(&mut self, from: &AddressValue, submission_timestamp: u64, price: u64) -> anyhow::Result<()> {
         self.world.sc_call(
             ScCallStep::new()
                 .from(from)
@@ -152,27 +158,29 @@ impl PriceAggregatorTestState {
                     DECIMALS,
                 ))
                 .gas_limit("7,000,000"),
-        );
+        )?;
+
+        Ok(())
     }
 }
 
 #[test]
-fn test_price_aggregator_submit() {
-    let mut state = PriceAggregatorTestState::new();
-    state.deploy();
+fn test_price_aggregator_submit()  -> anyhow::Result<()> {
+    let mut state = PriceAggregatorTestState::new()?;
+    state.deploy()?;
 
     // configure the number of decimals
-    state.set_pair_decimals();
+    state.set_pair_decimals()?;
 
     // unpause
-    state.unpause_endpoint();
+    state.unpause_endpoint()?;
 
     // submit first
-    state.submit(&state.oracles[0].clone(), 95, rand::random::<u64>());
+    state.submit(&state.oracles[0].clone(), 95, rand::random::<u64>())?;
 
     // submit ok
     for index in 1..SUBMISSION_COUNT - 1 {
-        state.submit(&state.oracles[index].clone(), 100, rand::random::<u64>());
+        state.submit(&state.oracles[index].clone(), 100, rand::random::<u64>())?;
     }
 
     let current_timestamp = 100;
@@ -213,15 +221,17 @@ fn test_price_aggregator_submit() {
                     }
                 );
             }
-        });
+        })?;
 
     // submit last that resets the round
     state.submit(
         &state.oracles[SUBMISSION_COUNT - 1].clone(),
         100,
         rand::random::<u64>(),
-    );
+    )?;
     state
         .world
         .write_scenario_trace("scenarios/stress_submit_test.scen.json");
+
+    Ok(())
 }

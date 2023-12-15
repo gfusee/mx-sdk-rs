@@ -44,7 +44,7 @@ struct TransferRoleTestState {
 }
 
 impl TransferRoleTestState {
-    fn new() -> Self {
+    fn new() -> anyhow::Result<Self> {
         let mut world = world();
         let vault_code = world.code_expression(VAULT_PATH_EXPR);
 
@@ -59,22 +59,24 @@ impl TransferRoleTestState {
                         .nonce(1)
                         .esdt_balance(TRANSFER_TOKEN_ID_EXPR, 1_000u64),
                 ),
-        );
+        )?;
 
         let owner_address = AddressValue::from(OWNER_ADDRESS_EXPR).to_address();
         let vault_address = AddressValue::from(VAULT_ADDRESS_EXPR).to_address();
         let transfer_role_features_contract =
             TransferRoleFeaturesContract::new(TRANSFER_ROLE_FEATURES_ADDRESS_EXPR);
 
-        Self {
-            world,
-            owner_address,
-            vault_address,
-            transfer_role_features_contract,
-        }
+        Ok(
+            Self {
+                world,
+                owner_address,
+                vault_address,
+                transfer_role_features_contract,
+            }
+        )
     }
 
-    fn deploy(&mut self) -> &mut Self {
+    fn deploy(&mut self) -> anyhow::Result<&mut Self> {
         let transfer_role_features_code =
             self.world.code_expression(TRANSFER_ROLE_FEATURES_PATH_EXPR);
 
@@ -88,12 +90,12 @@ impl TransferRoleTestState {
                 .from(OWNER_ADDRESS_EXPR)
                 .code(transfer_role_features_code)
                 .call(self.transfer_role_features_contract.init(whitelist)),
-        );
+        )?;
 
-        self
+        Ok(self)
     }
 
-    fn forward_payments(&mut self, dest: Address, endpoint_name: &[u8]) {
+    fn forward_payments(&mut self, dest: Address, endpoint_name: &[u8]) -> anyhow::Result<()> {
         self.world.sc_call(
             ScCallStep::new()
                 .from(USER_ADDRESS_EXPR)
@@ -103,42 +105,46 @@ impl TransferRoleTestState {
                     endpoint_name,
                     MultiValueVec::<Vec<u8>>::new(),
                 )),
-        );
+        )?;
+
+        Ok(())
     }
 
-    fn check_user_and_vault_balance(&mut self) {
+    fn check_user_and_vault_balance(&mut self) -> anyhow::Result<()> {
         self.world
             .check_state_step(CheckStateStep::new().put_account(
                 USER_ADDRESS_EXPR,
                 CheckAccount::new().esdt_balance(TRANSFER_TOKEN_ID_EXPR, "800"),
-            ));
+            ))?;
         self.world
             .check_state_step(CheckStateStep::new().put_account(
                 VAULT_ADDRESS_EXPR,
                 CheckAccount::new().esdt_balance(TRANSFER_TOKEN_ID_EXPR, "100"),
-            ));
+            ))?;
+
+        Ok(())
     }
 }
 
 #[test]
-fn test_transfer_role() {
-    let mut state = TransferRoleTestState::new();
-    state.deploy();
+fn test_transfer_role() -> anyhow::Result<()> {
+    let mut state = TransferRoleTestState::new()?;
+    state.deploy()?;
 
     // transfer to user - ok
-    state.forward_payments(state.owner_address.clone(), b"");
+    state.forward_payments(state.owner_address.clone(), b"")?;
     state
         .world
         .check_state_step(CheckStateStep::new().put_account(
             USER_ADDRESS_EXPR,
             CheckAccount::new().esdt_balance(TRANSFER_TOKEN_ID_EXPR, "900"),
-        ));
+        ))?;
     state
         .world
         .check_state_step(CheckStateStep::new().put_account(
             OWNER_ADDRESS_EXPR,
             CheckAccount::new().esdt_balance(TRANSFER_TOKEN_ID_EXPR, "100"),
-        ));
+        ))?;
 
     // transfer to user - err, not whitelisted
     state.world.sc_call(
@@ -153,13 +159,15 @@ fn test_transfer_role() {
             .expect(TxExpect::user_error(
                 "str:Destination address not whitelisted",
             )),
-    );
+    )?;
 
     // transfer to sc - ok
-    state.forward_payments(state.vault_address.clone(), ACCEPT_FUNDS_FUNC_NAME);
-    state.check_user_and_vault_balance();
+    state.forward_payments(state.vault_address.clone(), ACCEPT_FUNDS_FUNC_NAME)?;
+    state.check_user_and_vault_balance()?;
 
     // transfer to sc - reject
-    state.forward_payments(state.vault_address.clone(), REJECT_FUNDS_FUNC_NAME);
-    state.check_user_and_vault_balance();
+    state.forward_payments(state.vault_address.clone(), REJECT_FUNDS_FUNC_NAME)?;
+    state.check_user_and_vault_balance()?;
+
+    Ok(())
 }

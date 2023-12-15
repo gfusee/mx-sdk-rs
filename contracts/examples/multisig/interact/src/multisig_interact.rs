@@ -149,8 +149,8 @@ impl MultisigInteract {
 
             let scenario = Scenario::interpret_from(scenario_raw, &InterpreterContext::default());
 
-            self.interactor.pre_runners.run_scenario(&scenario);
-            self.interactor.post_runners.run_scenario(&scenario);
+            self.interactor.pre_runners.run_scenario(&scenario).unwrap();
+            self.interactor.post_runners.run_scenario(&scenario).unwrap();
         }
 
         self.wegld_swap_set_state().await;

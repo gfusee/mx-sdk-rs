@@ -75,7 +75,7 @@ fn linked_list_repeat_blackbox_raw() {
 }
 
 #[test]
-fn linked_list_repeat_struct_blackbox_raw() {
+fn linked_list_repeat_struct_blackbox_raw() -> anyhow::Result<()> {
     let mut world = setup();
     let mut contract = ContractInfo::<linked_list_repeat::Proxy<StaticApi>>::new("sc:llr");
 
@@ -93,7 +93,7 @@ fn linked_list_repeat_struct_blackbox_raw() {
             .to("sc:llr")
             .call(contract.add_struct(5u32, example.clone()))
             .expect(TxExpect::ok().no_result()),
-    );
+    )?;
     example.first_token_nonce = 3;
     example.second_token_nonce = 3;
     world.sc_call(
@@ -102,5 +102,7 @@ fn linked_list_repeat_struct_blackbox_raw() {
             .to("sc:llr")
             .call(contract.count_struct(example))
             .expect(TxExpect::ok().result("1")),
-    );
+    )?;
+
+    Ok(())
 }

@@ -11,11 +11,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn mmap_get_rs() {
-    world().run("scenarios/mmap_get.scen.json");
+fn mmap_get_rs() -> anyhow::Result<()> {
+    world().run("scenarios/mmap_get.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn mmap_remove_rs() {
-    world().run("scenarios/mmap_remove.scen.json");
+fn mmap_remove_rs() -> anyhow::Result<()> {
+    world().run("scenarios/mmap_remove.scen.json")?;
+
+    Ok(())
 }

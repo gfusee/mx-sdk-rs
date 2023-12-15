@@ -5,6 +5,8 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn price_aggregator_stress_submit_go() {
-    world().run("scenarios/stress_submit_with_gas_schedule_test.scen.json");
+fn price_aggregator_stress_submit_go() -> anyhow::Result<()> {
+    world().run("scenarios/stress_submit_with_gas_schedule_test.scen.json")?;
+
+    Ok(())
 }

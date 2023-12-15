@@ -48,7 +48,7 @@ struct PriceAggregatorTestState {
 }
 
 impl PriceAggregatorTestState {
-    fn new() -> Self {
+    fn new() -> anyhow::Result<Self> {
         let mut world = world();
 
         let mut set_state_step = SetStateStep::new()
@@ -68,7 +68,7 @@ impl PriceAggregatorTestState {
 
             oracles.push(address_value);
         }
-        world.set_state_step(set_state_step);
+        world.set_state_step(set_state_step)?;
 
         let price_aggregator_contract = PriceAggregatorContract::new(PRICE_AGGREGATOR_ADDRESS_EXPR);
         let price_aggregator_whitebox = WhiteboxContract::new(
@@ -76,15 +76,17 @@ impl PriceAggregatorTestState {
             multiversx_price_aggregator_sc::contract_obj,
         );
 
-        Self {
-            world,
-            oracles,
-            price_aggregator_contract,
-            price_aggregator_whitebox,
-        }
+        Ok(
+            Self {
+                world,
+                oracles,
+                price_aggregator_contract,
+                price_aggregator_whitebox,
+            }
+        )
     }
 
-    fn deploy(&mut self) -> &mut Self {
+    fn deploy(&mut self) -> anyhow::Result<&mut Self> {
         let price_aggregator_code = self.world.code_expression(PRICE_AGGREGATOR_PATH_EXPR);
 
         let oracles = MultiValueVec::from(
@@ -106,7 +108,7 @@ impl PriceAggregatorTestState {
                     SUBMISSION_COUNT,
                     oracles,
                 )),
-        );
+        )?;
 
         for address in self.oracles.iter() {
             self.world.sc_call(
@@ -114,30 +116,34 @@ impl PriceAggregatorTestState {
                     .from(address)
                     .egld_value(STAKE_AMOUNT)
                     .call(self.price_aggregator_contract.stake()),
-            );
+            )?;
         }
 
-        self
+        Ok(self)
     }
 
-    fn set_pair_decimals(&mut self) {
+    fn set_pair_decimals(&mut self) -> anyhow::Result<()> {
         self.world.sc_call(
             ScCallStep::new().from(OWNER_ADDRESS_EXPR).call(
                 self.price_aggregator_contract
                     .set_pair_decimals(EGLD_TICKER, USD_TICKER, DECIMALS),
             ),
-        );
+        )?;
+        
+        Ok(())
     }
 
-    fn unpause_endpoint(&mut self) {
+    fn unpause_endpoint(&mut self) -> anyhow::Result<()> {
         self.world.sc_call(
             ScCallStep::new()
                 .from(OWNER_ADDRESS_EXPR)
                 .call(self.price_aggregator_contract.unpause_endpoint()),
-        );
+        )?;
+        
+        Ok(())
     }
 
-    fn submit(&mut self, from: &AddressValue, submission_timestamp: u64, price: u64) {
+    fn submit(&mut self, from: &AddressValue, submission_timestamp: u64, price: u64) -> anyhow::Result<()> {
         self.world.sc_call(ScCallStep::new().from(from).call(
             self.price_aggregator_contract.submit(
                 EGLD_TICKER,
@@ -146,7 +152,9 @@ impl PriceAggregatorTestState {
                 price,
                 DECIMALS,
             ),
-        ));
+        ))?;
+        
+        Ok(())
     }
 
     fn submit_and_expect_err(
@@ -155,7 +163,7 @@ impl PriceAggregatorTestState {
         submission_timestamp: u64,
         price: u64,
         err_message: &str,
-    ) {
+    ) -> anyhow::Result<()> {
         self.world.sc_call(
             ScCallStep::new()
                 .from(from)
@@ -167,32 +175,36 @@ impl PriceAggregatorTestState {
                     DECIMALS,
                 ))
                 .expect(TxExpect::user_error("str:".to_string() + err_message)),
-        );
+        )?;
+
+        Ok(())
     }
 
-    fn vote_slash_member(&mut self, from: &AddressValue, member_to_slash: Address) {
+    fn vote_slash_member(&mut self, from: &AddressValue, member_to_slash: Address) -> anyhow::Result<()> {
         self.world.sc_call(
             ScCallStep::new().from(from).call(
                 self.price_aggregator_contract
                     .vote_slash_member(member_to_slash),
             ),
-        );
+        )?;
+        
+        Ok(())
     }
 }
 
 #[test]
-fn test_price_aggregator_submit() {
-    let mut state = PriceAggregatorTestState::new();
-    state.deploy();
+fn test_price_aggregator_submit() -> anyhow::Result<()> {
+    let mut state = PriceAggregatorTestState::new()?;
+    state.deploy()?;
 
     // configure the number of decimals
-    state.set_pair_decimals();
+    state.set_pair_decimals()?;
 
     // try submit while paused
-    state.submit_and_expect_err(&state.oracles[0].clone(), 99, 100, "Contract is paused");
+    state.submit_and_expect_err(&state.oracles[0].clone(), 99, 100, "Contract is paused")?;
 
     // unpause
-    state.unpause_endpoint();
+    state.unpause_endpoint()?;
 
     // submit first timestamp too old
     state.submit_and_expect_err(
@@ -200,10 +212,10 @@ fn test_price_aggregator_submit() {
         10,
         100,
         "First submission too old",
-    );
+    )?;
 
     // submit ok
-    state.submit(&state.oracles[0].clone(), 95, 100);
+    state.submit(&state.oracles[0].clone(), 95, 100)?;
 
     let current_timestamp = 100;
     state
@@ -240,10 +252,10 @@ fn test_price_aggregator_submit() {
                     accepted_submissions: 1
                 }
             );
-        });
+        })?;
 
     // first oracle submit again - submission not accepted
-    state.submit(&state.oracles[0].clone(), 95, 100);
+    state.submit(&state.oracles[0].clone(), 95, 100)?;
 
     state
         .world
@@ -257,33 +269,35 @@ fn test_price_aggregator_submit() {
                     accepted_submissions: 1
                 }
             );
-        });
+        })?;
+    
+    Ok(())
 }
 
 #[test]
-fn test_price_aggregator_submit_round_ok() {
-    let mut state = PriceAggregatorTestState::new();
-    state.deploy();
+fn test_price_aggregator_submit_round_ok()-> anyhow::Result<()> {
+    let mut state = PriceAggregatorTestState::new()?;
+    state.deploy()?;
 
     // configure the number of decimals
-    state.set_pair_decimals();
+    state.set_pair_decimals()?;
 
     // unpause
-    state.unpause_endpoint();
+    state.unpause_endpoint()?;
 
     // submit first
-    state.submit(&state.oracles[0].clone(), 95, 10_000);
+    state.submit(&state.oracles[0].clone(), 95, 10_000)?;
 
     let current_timestamp = 110;
     state
         .world
-        .set_state_step(SetStateStep::new().block_timestamp(current_timestamp));
+        .set_state_step(SetStateStep::new().block_timestamp(current_timestamp))?;
 
     // submit second
-    state.submit(&state.oracles[1].clone(), 101, 11_000);
+    state.submit(&state.oracles[1].clone(), 101, 11_000)?;
 
     // submit third
-    state.submit(&state.oracles[2].clone(), 105, 12_000);
+    state.submit(&state.oracles[2].clone(), 105, 12_000)?;
 
     state
         .world
@@ -315,30 +329,32 @@ fn test_price_aggregator_submit_round_ok() {
                     decimals
                 }
             );
-        });
+        })?;
+    
+    Ok(())
 }
 
 #[test]
-fn test_price_aggregator_discarded_round() {
-    let mut state = PriceAggregatorTestState::new();
-    state.deploy();
+fn test_price_aggregator_discarded_round()-> anyhow::Result<()> {
+    let mut state = PriceAggregatorTestState::new()?;
+    state.deploy()?;
 
     // configure the number of decimals
-    state.set_pair_decimals();
+    state.set_pair_decimals()?;
 
     // unpause
-    state.unpause_endpoint();
+    state.unpause_endpoint()?;
 
     // submit first
-    state.submit(&state.oracles[0].clone(), 95, 10_000);
+    state.submit(&state.oracles[0].clone(), 95, 10_000)?;
 
     let current_timestamp = 100 + MAX_ROUND_DURATION_SECONDS + 1;
     state
         .world
-        .set_state_step(SetStateStep::new().block_timestamp(current_timestamp));
+        .set_state_step(SetStateStep::new().block_timestamp(current_timestamp))?;
 
     // submit second - this will discard the previous submission
-    state.submit(&state.oracles[1].clone(), current_timestamp - 1, 11_000);
+    state.submit(&state.oracles[1].clone(), current_timestamp - 1, 11_000)?;
 
     state
         .world
@@ -355,20 +371,22 @@ fn test_price_aggregator_discarded_round() {
                     .unwrap(),
                 managed_biguint!(11_000)
             );
-        });
+        })?;
+    
+    Ok(())
 }
 
 #[test]
-fn test_price_aggregator_slashing() {
-    let mut state = PriceAggregatorTestState::new();
-    state.deploy();
+fn test_price_aggregator_slashing() -> anyhow::Result<()> {
+    let mut state = PriceAggregatorTestState::new()?;
+    state.deploy()?;
 
     // unpause
-    state.unpause_endpoint();
+    state.unpause_endpoint()?;
 
-    state.vote_slash_member(&state.oracles[0].clone(), state.oracles[1].to_address());
-    state.vote_slash_member(&state.oracles[2].clone(), state.oracles[1].to_address());
-    state.vote_slash_member(&state.oracles[3].clone(), state.oracles[1].to_address());
+    state.vote_slash_member(&state.oracles[0].clone(), state.oracles[1].to_address())?;
+    state.vote_slash_member(&state.oracles[2].clone(), state.oracles[1].to_address())?;
+    state.vote_slash_member(&state.oracles[3].clone(), state.oracles[1].to_address())?;
 
     state.world.sc_call(
         ScCallStep::new().from(&state.oracles[0]).call(
@@ -376,7 +394,7 @@ fn test_price_aggregator_slashing() {
                 .price_aggregator_contract
                 .slash_member(state.oracles[1].to_address()),
         ),
-    );
+    )?;
 
     // oracle 1 try submit after slashing
     state.submit_and_expect_err(
@@ -384,5 +402,7 @@ fn test_price_aggregator_slashing() {
         95,
         10_000,
         "only oracles allowed",
-    );
+    )?;
+    
+    Ok(())
 }

@@ -43,7 +43,7 @@ struct CrowdfundingESDTTestState {
 }
 
 impl CrowdfundingESDTTestState {
-    fn new() -> Self {
+    fn new() -> anyhow::Result<Self> {
         let mut world = world();
 
         world.set_state_step(
@@ -63,7 +63,7 @@ impl CrowdfundingESDTTestState {
                         .nonce(1)
                         .esdt_balance(CF_TOKEN_ID_EXPR, "1_000"),
                 ),
-        );
+        )?;
 
         let crowdfunding_esdt_contract =
             CrowdfundingESDTContract::new(CROWDFUNDING_ESDT_ADDRESS_EXPR);
@@ -71,15 +71,17 @@ impl CrowdfundingESDTTestState {
         let first_user_address = AddressValue::from(FIRST_USER_ADDRESS_EXPR).to_address();
         let second_user_address = AddressValue::from(SECOND_USER_ADDRESS_EXPR).to_address();
 
-        Self {
-            world,
-            crowdfunding_esdt_contract,
-            first_user_address,
-            second_user_address,
-        }
+        Ok(
+            Self {
+                world,
+                crowdfunding_esdt_contract,
+                first_user_address,
+                second_user_address,
+            }
+        )
     }
 
-    fn deploy(&mut self) -> &mut Self {
+    fn deploy(&mut self) -> anyhow::Result<&mut Self> {
         let crowdfunding_esdt_code = self.world.code_expression(CROWDFUNDING_ESDT_PATH_EXPR);
 
         self.world.sc_deploy(
@@ -91,60 +93,60 @@ impl CrowdfundingESDTTestState {
                     CF_DEADLINE,
                     EgldOrEsdtTokenIdentifier::esdt(CF_TOKEN_ID),
                 )),
-        );
+        )?;
 
-        self
+        Ok(self)
     }
 
-    fn fund(&mut self, address: &str, amount: &str) -> &mut Self {
+    fn fund(&mut self, address: &str, amount: &str) -> anyhow::Result<&mut Self> {
         self.world.sc_call(
             ScCallStep::new()
                 .from(address)
                 .esdt_transfer(CF_TOKEN_ID_EXPR, 0, amount)
                 .call(self.crowdfunding_esdt_contract.fund()),
-        );
+        )?;
 
-        self
+        Ok(self)
     }
 
-    fn check_deposit(&mut self, donor: Address, amount: u64) -> &mut Self {
+    fn check_deposit(&mut self, donor: Address, amount: u64) -> anyhow::Result<&mut Self> {
         self.world.sc_query(
             ScQueryStep::new()
                 .call(self.crowdfunding_esdt_contract.deposit(&donor))
                 .expect_value(SingleValue::from(BigUint::from(amount))),
-        );
+        )?;
 
-        self
+        Ok(self)
     }
 
-    fn check_status(&mut self, expected_value: Status) -> &mut Self {
+    fn check_status(&mut self, expected_value: Status) -> anyhow::Result<&mut Self> {
         self.world.sc_query(
             ScQueryStep::new()
                 .call(self.crowdfunding_esdt_contract.status())
                 .expect_value(expected_value),
-        );
+        )?;
 
-        self
+        Ok(self)
     }
 
-    fn claim(&mut self, address: &str) -> &mut Self {
+    fn claim(&mut self, address: &str) -> anyhow::Result<&mut Self> {
         self.world.sc_call(
             ScCallStep::new()
                 .from(address)
                 .call(self.crowdfunding_esdt_contract.claim()),
-        );
+        )?;
 
-        self
+        Ok(self)
     }
 
-    fn check_esdt_balance(&mut self, address_expr: &str, balance_expr: &str) -> &mut Self {
+    fn check_esdt_balance(&mut self, address_expr: &str, balance_expr: &str) -> anyhow::Result<&mut Self> {
         self.world
             .check_state_step(CheckStateStep::new().put_account(
                 address_expr,
                 CheckAccount::new().esdt_balance(CF_TOKEN_ID_EXPR, balance_expr),
-            ));
+            ))?;
 
-        self
+        Ok(self)
     }
 
     fn set_block_timestamp(&mut self, block_timestamp_expr: u64) -> anyhow::Result<&mut Self> {
@@ -157,29 +159,29 @@ impl CrowdfundingESDTTestState {
 
 #[test]
 fn test_fund() -> anyhow::Result<()> {
-    let mut state = CrowdfundingESDTTestState::new();
-    state.deploy();
+    let mut state = CrowdfundingESDTTestState::new()?;
+    state.deploy()?;
 
-    state.fund(FIRST_USER_ADDRESS_EXPR, "1000");
-    state.check_deposit(state.first_user_address.clone(), 1_000);
+    state.fund(FIRST_USER_ADDRESS_EXPR, "1000")?;
+    state.check_deposit(state.first_user_address.clone(), 1_000)?;
 
     Ok(())
 }
 
 #[test]
 fn test_status() -> anyhow::Result<()> {
-    let mut state = CrowdfundingESDTTestState::new();
-    state.deploy();
+    let mut state = CrowdfundingESDTTestState::new()?;
+    state.deploy()?;
 
-    state.check_status(Status::FundingPeriod);
+    state.check_status(Status::FundingPeriod)?;
 
     Ok(())
 }
 
 #[test]
 fn test_sc_error() -> anyhow::Result<()> {
-    let mut state = CrowdfundingESDTTestState::new();
-    state.deploy();
+    let mut state = CrowdfundingESDTTestState::new()?;
+    state.deploy()?;
 
     state.world.sc_call(
         ScCallStep::new()
@@ -203,22 +205,22 @@ fn test_sc_error() -> anyhow::Result<()> {
 
 #[test]
 fn test_successful_cf() -> anyhow::Result<()> {
-    let mut state = CrowdfundingESDTTestState::new();
-    state.deploy();
+    let mut state = CrowdfundingESDTTestState::new()?;
+    state.deploy()?;
 
     // first user fund
-    state.fund(FIRST_USER_ADDRESS_EXPR, "1_000");
-    state.check_deposit(state.first_user_address.clone(), 1_000);
+    state.fund(FIRST_USER_ADDRESS_EXPR, "1_000")?;
+    state.check_deposit(state.first_user_address.clone(), 1_000)?;
 
     // second user fund
-    state.fund(SECOND_USER_ADDRESS_EXPR, "1_000");
-    state.check_deposit(state.second_user_address.clone(), 1_000);
+    state.fund(SECOND_USER_ADDRESS_EXPR, "1_000")?;
+    state.check_deposit(state.second_user_address.clone(), 1_000)?;
 
     // set block timestamp after deadline
-    state.set_block_timestamp(CF_DEADLINE + 1);
+    state.set_block_timestamp(CF_DEADLINE + 1)?;
 
     // check status successful
-    state.check_status(Status::Successful);
+    state.check_status(Status::Successful)?;
 
     // user try claim
     state.world.sc_call(
@@ -231,43 +233,43 @@ fn test_successful_cf() -> anyhow::Result<()> {
     )?;
 
     // owner claim
-    state.claim(OWNER_ADDRESS_EXPR);
+    state.claim(OWNER_ADDRESS_EXPR)?;
 
-    state.check_esdt_balance(OWNER_ADDRESS_EXPR, "2_000");
-    state.check_esdt_balance(FIRST_USER_ADDRESS_EXPR, "0");
-    state.check_esdt_balance(SECOND_USER_ADDRESS_EXPR, "0");
+    state.check_esdt_balance(OWNER_ADDRESS_EXPR, "2_000")?;
+    state.check_esdt_balance(FIRST_USER_ADDRESS_EXPR, "0")?;
+    state.check_esdt_balance(SECOND_USER_ADDRESS_EXPR, "0")?;
 
     Ok(())
 }
 
 #[test]
 fn test_failed_cf() -> anyhow::Result<()> {
-    let mut state = CrowdfundingESDTTestState::new();
-    state.deploy();
+    let mut state = CrowdfundingESDTTestState::new()?;
+    state.deploy()?;
 
     // first user fund
-    state.fund(FIRST_USER_ADDRESS_EXPR, "300");
-    state.check_deposit(state.first_user_address.clone(), 300u64);
+    state.fund(FIRST_USER_ADDRESS_EXPR, "300")?;
+    state.check_deposit(state.first_user_address.clone(), 300u64)?;
 
     // second user fund
-    state.fund(SECOND_USER_ADDRESS_EXPR, "600");
-    state.check_deposit(state.second_user_address.clone(), 600u64);
+    state.fund(SECOND_USER_ADDRESS_EXPR, "600")?;
+    state.check_deposit(state.second_user_address.clone(), 600u64)?;
 
     // set block timestamp after deadline
-    state.set_block_timestamp(CF_DEADLINE + 1);
+    state.set_block_timestamp(CF_DEADLINE + 1)?;
 
     // check status failed
-    state.check_status(Status::Failed);
+    state.check_status(Status::Failed)?;
 
     // first user claim
-    state.claim(FIRST_USER_ADDRESS_EXPR);
+    state.claim(FIRST_USER_ADDRESS_EXPR)?;
 
     // second user claim
-    state.claim(SECOND_USER_ADDRESS_EXPR);
+    state.claim(SECOND_USER_ADDRESS_EXPR)?;
 
-    state.check_esdt_balance(OWNER_ADDRESS_EXPR, "0");
-    state.check_esdt_balance(FIRST_USER_ADDRESS_EXPR, "1_000");
-    state.check_esdt_balance(SECOND_USER_ADDRESS_EXPR, "1_000");
+    state.check_esdt_balance(OWNER_ADDRESS_EXPR, "0")?;
+    state.check_esdt_balance(FIRST_USER_ADDRESS_EXPR, "1_000")?;
+    state.check_esdt_balance(SECOND_USER_ADDRESS_EXPR, "1_000")?;
 
     Ok(())
 }

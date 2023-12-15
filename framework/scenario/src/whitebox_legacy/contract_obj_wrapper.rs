@@ -178,19 +178,21 @@ impl BlockchainStateWrapper {
 }
 
 impl BlockchainStateWrapper {
-    pub fn create_user_account(&mut self, egld_balance: &num_bigint::BigUint) -> Address {
+    pub fn create_user_account(&mut self, egld_balance: &num_bigint::BigUint) -> anyhow::Result<Address> {
         let address = self.address_factory.new_address();
-        self.create_account_raw(&address, egld_balance, None, None, None);
+        self.create_account_raw(&address, egld_balance, None, None, None)?;
 
-        address
+        Ok(address)
     }
 
     pub fn create_user_account_fixed_address(
         &mut self,
         address: &Address,
         egld_balance: &num_bigint::BigUint,
-    ) {
-        self.create_account_raw(address, egld_balance, None, None, None);
+    ) -> anyhow::Result<()> {
+        self.create_account_raw(address, egld_balance, None, None, None)?;
+
+        Ok(())
     }
 
     pub fn create_sc_account<CB, ContractObjBuilder>(
@@ -199,7 +201,7 @@ impl BlockchainStateWrapper {
         owner: Option<&Address>,
         obj_builder: ContractObjBuilder,
         contract_wasm_path: &str,
-    ) -> ContractObjWrapper<CB, ContractObjBuilder>
+    ) -> anyhow::Result<ContractObjWrapper<CB, ContractObjBuilder>>
     where
         CB: ContractBase<Api = DebugApi> + CallableContract + 'static,
         ContractObjBuilder: 'static + Copy + Fn() -> CB,
@@ -221,7 +223,7 @@ impl BlockchainStateWrapper {
         owner: Option<&Address>,
         obj_builder: ContractObjBuilder,
         contract_wasm_path: &str,
-    ) -> ContractObjWrapper<CB, ContractObjBuilder>
+    ) -> anyhow::Result<ContractObjWrapper<CB, ContractObjBuilder>>
     where
         CB: ContractBase<Api = DebugApi> + CallableContract + 'static,
         ContractObjBuilder: 'static + Copy + Fn() -> CB,
@@ -251,7 +253,7 @@ impl BlockchainStateWrapper {
         }
 
         self.world
-            .set_state_step(SetStateStep::new().put_account(address, account));
+            .set_state_step(SetStateStep::new().put_account(address, account))?;
 
         self.address_to_code_path
             .insert(address.clone(), contract_code_expr_str.into_bytes());
@@ -277,7 +279,7 @@ impl BlockchainStateWrapper {
                 );
         }
 
-        ContractObjWrapper::new(address.clone(), obj_builder)
+        Ok(ContractObjWrapper::new(address.clone(), obj_builder))
     }
 
     pub fn create_account_raw(
@@ -287,7 +289,7 @@ impl BlockchainStateWrapper {
         _owner: Option<&Address>,
         _sc_identifier: Option<Vec<u8>>,
         _sc_mandos_path_expr: Option<Vec<u8>>,
-    ) {
+    ) -> anyhow::Result<()> {
         let vm_address = to_vm_address(address);
         if self.world.get_state().account_exists(&vm_address) {
             panic!("Address already used: {:?}", address_to_hex(address));
@@ -296,7 +298,9 @@ impl BlockchainStateWrapper {
         let account = Account::new().balance(egld_balance);
 
         self.world
-            .set_state_step(SetStateStep::new().put_account(address, account));
+            .set_state_step(SetStateStep::new().put_account(address, account))?;
+
+        Ok(())
     }
 
     // Has to be used before perfoming a deploy from a SC
@@ -489,55 +493,75 @@ impl BlockchainStateWrapper {
         }
     }
 
-    pub fn set_block_epoch(&mut self, block_epoch: u64) {
+    pub fn set_block_epoch(&mut self, block_epoch: u64) -> anyhow::Result<()> {
         self.world
-            .set_state_step(SetStateStep::new().block_epoch(block_epoch));
+            .set_state_step(SetStateStep::new().block_epoch(block_epoch))?;
+
+        Ok(())
     }
 
-    pub fn set_block_nonce(&mut self, block_nonce: u64) {
+    pub fn set_block_nonce(&mut self, block_nonce: u64) -> anyhow::Result<()> {
         self.world
-            .set_state_step(SetStateStep::new().block_nonce(block_nonce));
+            .set_state_step(SetStateStep::new().block_nonce(block_nonce))?;
+
+        Ok(())
     }
 
-    pub fn set_block_random_seed(&mut self, block_random_seed: &[u8; 48]) {
+    pub fn set_block_random_seed(&mut self, block_random_seed: &[u8; 48]) -> anyhow::Result<()> {
         self.world
-            .set_state_step(SetStateStep::new().block_random_seed(block_random_seed.as_slice()));
+            .set_state_step(SetStateStep::new().block_random_seed(block_random_seed.as_slice()))?;
+
+        Ok(())
     }
 
-    pub fn set_block_round(&mut self, block_round: u64) {
+    pub fn set_block_round(&mut self, block_round: u64) -> anyhow::Result<()> {
         self.world
-            .set_state_step(SetStateStep::new().block_round(block_round));
+            .set_state_step(SetStateStep::new().block_round(block_round))?;
+
+        Ok(())
     }
 
-    pub fn set_block_timestamp(&mut self, block_timestamp: u64) {
+    pub fn set_block_timestamp(&mut self, block_timestamp: u64) -> anyhow::Result<()> {
         self.world
-            .set_state_step(SetStateStep::new().block_timestamp(block_timestamp));
+            .set_state_step(SetStateStep::new().block_timestamp(block_timestamp))?;
+
+        Ok(())
     }
 
-    pub fn set_prev_block_epoch(&mut self, block_epoch: u64) {
+    pub fn set_prev_block_epoch(&mut self, block_epoch: u64) -> anyhow::Result<()> {
         self.world
-            .set_state_step(SetStateStep::new().prev_block_epoch(block_epoch));
+            .set_state_step(SetStateStep::new().prev_block_epoch(block_epoch))?;
+
+        Ok(())
     }
 
-    pub fn set_prev_block_nonce(&mut self, block_nonce: u64) {
+    pub fn set_prev_block_nonce(&mut self, block_nonce: u64) -> anyhow::Result<()> {
         self.world
-            .set_state_step(SetStateStep::new().prev_block_nonce(block_nonce));
+            .set_state_step(SetStateStep::new().prev_block_nonce(block_nonce))?;
+
+        Ok(())
     }
 
-    pub fn set_prev_block_random_seed(&mut self, block_random_seed: &[u8; 48]) {
+    pub fn set_prev_block_random_seed(&mut self, block_random_seed: &[u8; 48]) -> anyhow::Result<()> {
         self.world.set_state_step(
             SetStateStep::new().prev_block_random_seed(block_random_seed.as_slice()),
-        );
+        )?;
+
+        Ok(())
     }
 
-    pub fn set_prev_block_round(&mut self, block_round: u64) {
+    pub fn set_prev_block_round(&mut self, block_round: u64) -> anyhow::Result<()> {
         self.world
-            .set_state_step(SetStateStep::new().prev_block_round(block_round));
+            .set_state_step(SetStateStep::new().prev_block_round(block_round))?;
+
+        Ok(())
     }
 
-    pub fn set_prev_block_timestamp(&mut self, block_timestamp: u64) {
+    pub fn set_prev_block_timestamp(&mut self, block_timestamp: u64) -> anyhow::Result<()> {
         self.world
-            .set_state_step(SetStateStep::new().prev_block_timestamp(block_timestamp));
+            .set_state_step(SetStateStep::new().prev_block_timestamp(block_timestamp))?;
+
+        Ok(())
     }
 
     pub fn add_mandos_sc_call(

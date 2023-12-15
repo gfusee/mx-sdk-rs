@@ -15,11 +15,15 @@ fn world() -> ScenarioWorld {
 
 #[ignore = "`internalVMErrors` logs not implemented"]
 #[test]
-fn panic_after_log_rs() {
-    world().run("scenarios/panic-after-log.scen.json");
+fn panic_after_log_rs() -> anyhow::Result<()> {
+    world().run("scenarios/panic-after-log.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn panic_message_rs() {
-    world().run("scenarios/panic-message.scen.json");
+fn panic_message_rs() -> anyhow::Result<()> {
+    world().run("scenarios/panic-message.scen.json")?;
+
+    Ok(())
 }

@@ -8,12 +8,14 @@ use multiversx_chain_vm::{
 };
 
 impl ScenarioVMRunner {
-    pub fn perform_transfer(&mut self, transfer_step: &TransferStep) {
+    pub fn perform_transfer(&mut self, transfer_step: &TransferStep) -> anyhow::Result<()> {
         execute(
             self.blockchain_mock.vm.clone(),
             &mut self.blockchain_mock.state,
             &transfer_step.tx,
-        );
+        )?;
+
+        Ok(())
     }
 
     pub fn perform_validator_reward(&mut self, validator_rewards_step: &ValidatorRewardStep) {

@@ -5,11 +5,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn panic_after_log_go() {
-    world().run("scenarios/panic-after-log.scen.json");
+fn panic_after_log_go() -> anyhow::Result<()> {
+    world().run("scenarios/panic-after-log.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn panic_message_go() {
-    world().run("scenarios/panic-message.scen.json");
+fn panic_message_go() -> anyhow::Result<()> {
+    world().run("scenarios/panic-message.scen.json")?;
+
+    Ok(())
 }

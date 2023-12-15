@@ -7,6 +7,8 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn str_repeat_rs() {
-    world().run("scenarios/str_repeat.scen.json");
+fn str_repeat_rs() -> anyhow::Result<()> {
+    world().run("scenarios/str_repeat.scen.json")?;
+
+    Ok(())
 }

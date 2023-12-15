@@ -37,8 +37,8 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn test_price_aggregator_submit() {
-    let (mut world, oracles) = setup();
+fn test_price_aggregator_submit() -> anyhow::Result<()> {
+    let (mut world, oracles) = setup()?;
     let price_aggregator_whitebox = WhiteboxContract::new(
         PRICE_AGGREGATOR_ADDRESS_EXPR,
         multiversx_price_aggregator_sc::contract_obj,
@@ -55,7 +55,7 @@ fn test_price_aggregator_submit() {
                 DECIMALS,
             )
         },
-    );
+    )?;
 
     // try submit while paused
     world.whitebox_call_check(
@@ -73,14 +73,14 @@ fn test_price_aggregator_submit() {
             )
         },
         |r| r.assert_user_error("Contract is paused"),
-    );
+    )?;
 
     // unpause
     world.whitebox_call(
         &price_aggregator_whitebox,
         ScCallStep::new().from(OWNER_ADDRESS_EXPR),
         |sc| sc.call_unpause_endpoint(),
-    );
+    )?;
 
     // submit first timestamp too old
     world.whitebox_call_check(
@@ -98,7 +98,7 @@ fn test_price_aggregator_submit() {
         |r| {
             r.assert_user_error("First submission too old");
         },
-    );
+    )?;
 
     // submit ok
     world.whitebox_call(
@@ -113,7 +113,7 @@ fn test_price_aggregator_submit() {
                 DECIMALS,
             )
         },
-    );
+    )?;
 
     let current_timestamp = 100;
     world.whitebox_query(&price_aggregator_whitebox, |sc| {
@@ -148,7 +148,7 @@ fn test_price_aggregator_submit() {
                 accepted_submissions: 1
             }
         );
-    });
+    })?;
 
     // first oracle submit again - submission not accepted
     world.whitebox_call(
@@ -163,7 +163,7 @@ fn test_price_aggregator_submit() {
                 DECIMALS,
             )
         },
-    );
+    )?;
 
     world.whitebox_query(&price_aggregator_whitebox, |sc| {
         assert_eq!(
@@ -175,12 +175,14 @@ fn test_price_aggregator_submit() {
                 accepted_submissions: 1
             }
         );
-    });
+    })?;
+
+    Ok(())
 }
 
 #[test]
-fn test_price_aggregator_submit_round_ok() {
-    let (mut world, oracles) = setup();
+fn test_price_aggregator_submit_round_ok() -> anyhow::Result<()> {
+    let (mut world, oracles) = setup()?;
     let price_aggregator_whitebox = WhiteboxContract::new(
         PRICE_AGGREGATOR_ADDRESS_EXPR,
         multiversx_price_aggregator_sc::contract_obj,
@@ -197,14 +199,14 @@ fn test_price_aggregator_submit_round_ok() {
                 DECIMALS,
             )
         },
-    );
+    )?;
 
     // unpause
     world.whitebox_call(
         &price_aggregator_whitebox,
         ScCallStep::new().from(OWNER_ADDRESS_EXPR),
         |sc| sc.call_unpause_endpoint(),
-    );
+    )?;
 
     // submit first
     world.whitebox_call(
@@ -219,10 +221,10 @@ fn test_price_aggregator_submit_round_ok() {
                 DECIMALS,
             )
         },
-    );
+    )?;
 
     let current_timestamp = 110;
-    world.set_state_step(SetStateStep::new().block_timestamp(current_timestamp));
+    world.set_state_step(SetStateStep::new().block_timestamp(current_timestamp))?;
 
     // submit second
     world.whitebox_call(
@@ -237,7 +239,7 @@ fn test_price_aggregator_submit_round_ok() {
                 DECIMALS,
             )
         },
-    );
+    )?;
 
     // submit third
     world.whitebox_call(
@@ -252,7 +254,7 @@ fn test_price_aggregator_submit_round_ok() {
                 DECIMALS,
             )
         },
-    );
+    )?;
 
     world.whitebox_query(&price_aggregator_whitebox, |sc| {
         let result = sc
@@ -282,12 +284,14 @@ fn test_price_aggregator_submit_round_ok() {
                 decimals
             }
         );
-    });
+    })?;
+
+    Ok(())
 }
 
 #[test]
-fn test_price_aggregator_discarded_round() {
-    let (mut world, oracles) = setup();
+fn test_price_aggregator_discarded_round() -> anyhow::Result<()> {
+    let (mut world, oracles) = setup()?;
     let price_aggregator_whitebox = WhiteboxContract::new(
         PRICE_AGGREGATOR_ADDRESS_EXPR,
         multiversx_price_aggregator_sc::contract_obj,
@@ -304,14 +308,14 @@ fn test_price_aggregator_discarded_round() {
                 DECIMALS,
             )
         },
-    );
+    )?;
 
     // unpause
     world.whitebox_call(
         &price_aggregator_whitebox,
         ScCallStep::new().from(OWNER_ADDRESS_EXPR),
         |sc| sc.call_unpause_endpoint(),
-    );
+    )?;
 
     // submit first
     world.whitebox_call(
@@ -326,10 +330,10 @@ fn test_price_aggregator_discarded_round() {
                 DECIMALS,
             )
         },
-    );
+    )?;
 
     let current_timestamp = 100 + MAX_ROUND_DURATION_SECONDS + 1;
-    world.set_state_step(SetStateStep::new().block_timestamp(current_timestamp));
+    world.set_state_step(SetStateStep::new().block_timestamp(current_timestamp))?;
 
     // submit second - this will discard the previous submission
     world.whitebox_call(
@@ -344,7 +348,7 @@ fn test_price_aggregator_discarded_round() {
                 DECIMALS,
             )
         },
-    );
+    )?;
 
     world.whitebox_query(&price_aggregator_whitebox, |sc| {
         let token_pair = TokenPair {
@@ -359,12 +363,14 @@ fn test_price_aggregator_discarded_round() {
                 .unwrap(),
             managed_biguint!(11_000)
         );
-    });
+    })?;
+
+    Ok(())
 }
 
 #[test]
-fn test_price_aggregator_slashing() {
-    let (mut world, oracles) = setup();
+fn test_price_aggregator_slashing() -> anyhow::Result<()> {
+    let (mut world, oracles) = setup()?;
     let price_aggregator_whitebox = WhiteboxContract::new(
         PRICE_AGGREGATOR_ADDRESS_EXPR,
         multiversx_price_aggregator_sc::contract_obj,
@@ -375,7 +381,7 @@ fn test_price_aggregator_slashing() {
         &price_aggregator_whitebox,
         ScCallStep::new().from(OWNER_ADDRESS_EXPR),
         |sc| sc.call_unpause_endpoint(),
-    );
+    )?;
 
     world.whitebox_call(
         &price_aggregator_whitebox,
@@ -383,7 +389,7 @@ fn test_price_aggregator_slashing() {
             .from(&oracles[0])
             .argument(BytesValue::from(oracles[1].to_address().as_bytes())),
         |sc| sc.call_vote_slash_member(),
-    );
+    )?;
 
     world.whitebox_call(
         &price_aggregator_whitebox,
@@ -391,7 +397,7 @@ fn test_price_aggregator_slashing() {
             .from(&oracles[2])
             .argument(BytesValue::from(oracles[1].to_address().as_bytes())),
         |sc| sc.call_vote_slash_member(),
-    );
+    )?;
 
     world.whitebox_call(
         &price_aggregator_whitebox,
@@ -399,7 +405,7 @@ fn test_price_aggregator_slashing() {
             .from(&oracles[3])
             .argument(BytesValue::from(oracles[1].to_address().as_bytes())),
         |sc| sc.call_vote_slash_member(),
-    );
+    )?;
 
     world.whitebox_call(
         &price_aggregator_whitebox,
@@ -407,7 +413,7 @@ fn test_price_aggregator_slashing() {
             .from(&oracles[0])
             .argument(BytesValue::from(oracles[1].to_address().as_bytes())),
         |sc| sc.call_slash_member(),
-    );
+    )?;
 
     // oracle 1 try submit after slashing
     world.whitebox_call_check(
@@ -425,10 +431,12 @@ fn test_price_aggregator_slashing() {
         |r| {
             r.assert_user_error("only oracles allowed");
         },
-    );
+    )?;
+
+    Ok(())
 }
 
-fn setup() -> (ScenarioWorld, Vec<AddressValue>) {
+fn setup() -> anyhow::Result<(ScenarioWorld, Vec<AddressValue>)> {
     // setup
     let mut world = world();
     let price_aggregator_whitebox = WhiteboxContract::new(
@@ -455,8 +463,7 @@ fn setup() -> (ScenarioWorld, Vec<AddressValue>) {
     }
 
     // init price aggregator
-    world.set_state_step(set_state_step)
-        .unwrap()
+    world.set_state_step(set_state_step)?
         .whitebox_deploy(
             &price_aggregator_whitebox,
             ScDeployStep::new()
@@ -477,8 +484,7 @@ fn setup() -> (ScenarioWorld, Vec<AddressValue>) {
                     oracle_args,
                 )
             },
-        )
-        .unwrap();
+        )?;
 
     for oracle_address in &oracles {
         world.whitebox_call(
@@ -487,8 +493,8 @@ fn setup() -> (ScenarioWorld, Vec<AddressValue>) {
                 .from(oracle_address)
                 .egld_value(STAKE_AMOUNT),
             |sc| sc.call_stake(),
-        );
+        )?;
     }
 
-    (world, oracles)
+    Ok((world, oracles))
 }

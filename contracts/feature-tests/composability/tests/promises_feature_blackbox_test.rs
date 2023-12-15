@@ -39,7 +39,7 @@ struct PromisesFeaturesTestState {
 }
 
 impl PromisesFeaturesTestState {
-    fn new() -> Self {
+    fn new() -> anyhow::Result<Self> {
         let mut world = world();
 
         let promises_feature_code = world.code_expression(PROMISES_FEATURES_PATH_EXPR);
@@ -59,23 +59,25 @@ impl PromisesFeaturesTestState {
                         .code(vault_code)
                         .esdt_balance(TOKEN_ID_EXPR, "1000"),
                 ),
-        );
+        )?;
 
         let promises_features_contract =
             PromisesFeaturesContract::new(PROMISES_FEATURE_ADDRESS_EXPR);
         let vault_contract = VaultContract::new(VAULT_ADDRESS_EXPR);
 
-        Self {
-            world,
-            promises_features_contract,
-            vault_contract,
-        }
+        Ok(
+            Self {
+                world,
+                promises_features_contract,
+                vault_contract,
+            }
+        )
     }
 }
 
 #[test]
-fn test_back_transfers() {
-    let mut state = PromisesFeaturesTestState::new();
+fn test_back_transfers() -> anyhow::Result<()> {
+    let mut state = PromisesFeaturesTestState::new()?;
     let token_amount = BigUint::from(1000u64);
 
     state.world.sc_call(
@@ -89,12 +91,14 @@ fn test_back_transfers() {
                     &token_amount,
                 ),
         ),
-    );
+    )?;
 
     state
         .world
         .check_state_step(CheckStateStep::new().put_account(
             state.promises_features_contract,
             CheckAccount::new().esdt_balance(TOKEN_ID_EXPR, token_amount),
-        ));
+        ))?;
+
+    Ok(())
 }

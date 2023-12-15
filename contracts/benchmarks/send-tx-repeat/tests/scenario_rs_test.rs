@@ -10,6 +10,8 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn send_tx_repeat_rs() {
-    world().run("scenarios/send_tx_repeat.scen.json");
+fn send_tx_repeat_rs() -> anyhow::Result<()> {
+    world().run("scenarios/send_tx_repeat.scen.json")?;
+
+    Ok(())
 }

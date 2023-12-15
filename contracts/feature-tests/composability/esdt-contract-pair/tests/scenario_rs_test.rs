@@ -15,28 +15,38 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn init_rs() {
-    world().run("scenarios/init.scen.json");
+fn init_rs() -> anyhow::Result<()> {
+    world().run("scenarios/init.scen.json")?;
+
+    Ok(())
 }
 
 // TODO: implement ESDTTransfer + async call
 #[test]
 #[ignore]
-fn reject_transfer_rs() {
-    world().run("scenarios/reject_transfer.scen.json");
+fn reject_transfer_rs() -> anyhow::Result<()> {
+    world().run("scenarios/reject_transfer.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn simple_transfer_full_rs() {
-    world().run("scenarios/simple_transfer_full.scen.json");
+fn simple_transfer_full_rs() -> anyhow::Result<()> {
+    world().run("scenarios/simple_transfer_full.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn simple_transfer_full_wrong_token_rs() {
-    world().run("scenarios/simple_transfer_full_wrong_token.scen.json");
+fn simple_transfer_full_wrong_token_rs() -> anyhow::Result<()> {
+    world().run("scenarios/simple_transfer_full_wrong_token.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn simple_transfer_half_rs() {
-    world().run("scenarios/simple_transfer_half.scen.json");
+fn simple_transfer_half_rs() -> anyhow::Result<()> {
+    world().run("scenarios/simple_transfer_half.scen.json")?;
+
+    Ok(())
 }

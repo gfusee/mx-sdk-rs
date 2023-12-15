@@ -5,11 +5,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn map_repeat_go() {
-    world().run("scenarios/map_repeat.scen.json");
+fn map_repeat_go() -> anyhow::Result<()> {
+    world().run("scenarios/map_repeat.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn map_repeat_struct_go() {
-    world().run("scenarios/map_repeat_struct.scen.json");
+fn map_repeat_struct_go() -> anyhow::Result<()> {
+    world().run("scenarios/map_repeat_struct.scen.json")?;
+
+    Ok(())
 }

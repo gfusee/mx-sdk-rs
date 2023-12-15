@@ -9,11 +9,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn set_repeat_rs() {
-    world().run("scenarios/set_repeat.scen.json");
+fn set_repeat_rs() -> anyhow::Result<()> {
+    world().run("scenarios/set_repeat.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn set_repeat_struct_rs() {
-    world().run("scenarios/set_repeat_struct.scen.json");
+fn set_repeat_struct_rs() -> anyhow::Result<()> {
+    world().run("scenarios/set_repeat_struct.scen.json")?;
+
+    Ok(())
 }

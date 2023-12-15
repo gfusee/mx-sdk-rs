@@ -9,11 +9,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn vec_repeat_rs() {
-    world().run("scenarios/vec_repeat.scen.json");
+fn vec_repeat_rs() -> anyhow::Result<()> {
+    world().run("scenarios/vec_repeat.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn vec_repeat_struct_rs() {
-    world().run("scenarios/vec_repeat_struct.scen.json");
+fn vec_repeat_struct_rs() -> anyhow::Result<()> {
+    world().run("scenarios/vec_repeat_struct.scen.json")?;
+
+    Ok(())
 }

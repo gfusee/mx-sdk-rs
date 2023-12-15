@@ -12,106 +12,148 @@ fn world() -> ScenarioWorld {
     blockchain
 }
 #[test]
-fn boxed_bytes_zeros_rs() {
-    world().run("scenarios/boxed_bytes_zeros.scen.json");
+fn boxed_bytes_zeros_rs() -> anyhow::Result<()> {
+    world().run("scenarios/boxed_bytes_zeros.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn echo_async_result_empty_rs() {
-    world().run("scenarios/echo_async_result_empty.scen.json");
+fn echo_async_result_empty_rs() -> anyhow::Result<()> {
+    world().run("scenarios/echo_async_result_empty.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn echo_big_int_nested_alloc_rs() {
-    world().run("scenarios/echo_big_int_nested_alloc.scen.json");
+fn echo_big_int_nested_alloc_rs() -> anyhow::Result<()> {
+    world().run("scenarios/echo_big_int_nested_alloc.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn echo_boxed_bytes_rs() {
-    world().run("scenarios/echo_boxed_bytes.scen.json");
+fn echo_boxed_bytes_rs() -> anyhow::Result<()> {
+    world().run("scenarios/echo_boxed_bytes.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn echo_multi_value_tuples_alloc_rs() {
-    world().run("scenarios/echo_multi_value_tuples_alloc.scen.json");
+fn echo_multi_value_tuples_alloc_rs() -> anyhow::Result<()> {
+    world().run("scenarios/echo_multi_value_tuples_alloc.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn echo_ser_ex_1_rs() {
-    world().run("scenarios/echo_ser_ex_1.scen.json");
+fn echo_ser_ex_1_rs() -> anyhow::Result<()> {
+    world().run("scenarios/echo_ser_ex_1.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn echo_slice_u_8_rs() {
-    world().run("scenarios/echo_slice_u8.scen.json");
+fn echo_slice_u_8_rs() -> anyhow::Result<()> {
+    world().run("scenarios/echo_slice_u8.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn echo_str_rs() {
-    world().run("scenarios/echo_str.scen.json");
+fn echo_str_rs() -> anyhow::Result<()> {
+    world().run("scenarios/echo_str.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn echo_str_box_rs() {
-    world().run("scenarios/echo_str_box.scen.json");
+fn echo_str_box_rs() -> anyhow::Result<()> {
+    world().run("scenarios/echo_str_box.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn echo_string_rs() {
-    world().run("scenarios/echo_string.scen.json");
+fn echo_string_rs() -> anyhow::Result<()> {
+    world().run("scenarios/echo_string.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn echo_varargs_u_32_alloc_rs() {
-    world().run("scenarios/echo_varargs_u32_alloc.scen.json");
+fn echo_varargs_u_32_alloc_rs() -> anyhow::Result<()> {
+    world().run("scenarios/echo_varargs_u32_alloc.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn echo_vec_u_8_rs() {
-    world().run("scenarios/echo_vec_u8.scen.json");
+fn echo_vec_u_8_rs() -> anyhow::Result<()> {
+    world().run("scenarios/echo_vec_u8.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn managed_buffer_concat_2_rs() {
-    world().run("scenarios/managed_buffer_concat_2.scen.json");
+fn managed_buffer_concat_2_rs() -> anyhow::Result<()> {
+    world().run("scenarios/managed_buffer_concat_2.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn managed_buffer_load_slice_rs() {
-    world().run("scenarios/managed_buffer_load_slice.scen.json");
+fn managed_buffer_load_slice_rs() -> anyhow::Result<()> {
+    world().run("scenarios/managed_buffer_load_slice.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn managed_buffer_overwrite_rs() {
-    world().run("scenarios/managed_buffer_overwrite.scen.json");
+fn managed_buffer_overwrite_rs() -> anyhow::Result<()> {
+    world().run("scenarios/managed_buffer_overwrite.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn managed_buffer_set_slice_rs() {
-    world().run("scenarios/managed_buffer_set_slice.scen.json");
+fn managed_buffer_set_slice_rs() -> anyhow::Result<()> {
+    world().run("scenarios/managed_buffer_set_slice.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn only_owner_legacy_rs() {
-    world().run("scenarios/only_owner_legacy.scen.json");
+fn only_owner_legacy_rs() -> anyhow::Result<()> {
+    world().run("scenarios/only_owner_legacy.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn sc_result_rs() {
-    world().run("scenarios/sc_result.scen.json");
+fn sc_result_rs() -> anyhow::Result<()> {
+    world().run("scenarios/sc_result.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn storage_address_rs() {
-    world().run("scenarios/storage_address.scen.json");
+fn storage_address_rs() -> anyhow::Result<()> {
+    world().run("scenarios/storage_address.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn storage_opt_address_rs() {
-    world().run("scenarios/storage_opt_address.scen.json");
+fn storage_opt_address_rs() -> anyhow::Result<()> {
+    world().run("scenarios/storage_opt_address.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn storage_vec_u_8_rs() {
-    world().run("scenarios/storage_vec_u8.scen.json");
+fn storage_vec_u_8_rs() -> anyhow::Result<()> {
+    world().run("scenarios/storage_vec_u8.scen.json")?;
+
+    Ok(())
 }

@@ -12,11 +12,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn single_value_repeat_rs() {
-    world().run("scenarios/single_value_repeat.scen.json");
+fn single_value_repeat_rs() -> anyhow::Result<()> {
+    world().run("scenarios/single_value_repeat.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn single_value_repeat_struct_rs() {
-    world().run("scenarios/single_value_repeat_struct.scen.json");
+fn single_value_repeat_struct_rs() -> anyhow::Result<()> {
+    world().run("scenarios/single_value_repeat_struct.scen.json")?;
+
+    Ok(())
 }

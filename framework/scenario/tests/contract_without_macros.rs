@@ -450,6 +450,8 @@ fn world() -> multiversx_sc_scenario::ScenarioWorld {
 }
 
 #[test]
-fn contract_without_macros_scenario() {
-    world().run("../../contracts/examples/adder/scenarios/adder.scen.json");
+fn contract_without_macros_scenario() -> anyhow::Result<()> {
+    world().run("../../contracts/examples/adder/scenarios/adder.scen.json")?;
+
+    Ok(())
 }

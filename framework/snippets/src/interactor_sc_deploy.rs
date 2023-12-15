@@ -30,7 +30,7 @@ impl Interactor {
     }
 
     pub async fn launch_sc_deploy(&mut self, sc_deploy_step: &mut ScDeployStep) -> String {
-        self.pre_runners.run_sc_deploy_step(sc_deploy_step);
+        self.pre_runners.run_sc_deploy_step(sc_deploy_step).unwrap();
 
         let sender_address = &sc_deploy_step.tx.from.value;
         let mut transaction = self.sc_deploy_to_blockchain_tx(sc_deploy_step);
@@ -72,9 +72,9 @@ impl Interactor {
         );
 
         println!("deploy address: {}", bech32::encode(&deploy_address));
-        self.pre_runners.run_set_state_step(&set_state_step);
-        self.post_runners.run_set_state_step(&set_state_step);
+        self.pre_runners.run_set_state_step(&set_state_step).unwrap();
+        self.post_runners.run_set_state_step(&set_state_step).unwrap();
 
-        self.post_runners.run_sc_deploy_step(sc_deploy_step);
+        self.post_runners.run_sc_deploy_step(sc_deploy_step).unwrap();
     }
 }

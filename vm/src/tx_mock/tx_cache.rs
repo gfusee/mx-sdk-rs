@@ -3,7 +3,7 @@ use std::{
     fmt,
     sync::{Arc, Mutex},
 };
-use anyhow::{anyhow, bail};
+use anyhow::bail;
 
 use crate::{
     display_util::address_hex,
@@ -60,12 +60,12 @@ impl TxCache {
         })
     }
 
-    pub fn with_account_or_else<R, F, Else>(&self, address: &VMAddress, f: F, or_else: Else) -> R
+    pub fn with_account_or_else<R, F, Else>(&self, address: &VMAddress, f: F, or_else: Else) -> anyhow::Result<R>
     where
-        F: FnOnce(&AccountData) -> R,
-        Else: FnOnce() -> R,
+        F: FnOnce(&AccountData) -> anyhow::Result<R>,
+        Else: FnOnce() -> anyhow::Result<R>,
     {
-        self.load_account_if_necessary(address);
+        self.load_account_if_necessary(address)?;
         let accounts = self.accounts.lock().unwrap();
         if let Some(account) = accounts.get(address) {
             f(account)

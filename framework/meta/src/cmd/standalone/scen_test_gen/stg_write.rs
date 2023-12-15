@@ -23,8 +23,10 @@ pub fn contains_world_fn(s: &str) -> bool {
 pub fn format_test_fn_rs(scenario_file_name: &str) -> String {
     format!(
         "
-fn {}_rs() {{
-    world().run(\"scenarios/{}.scen.json\");
+fn {}_rs() -> anyhow::Result<()> {{
+    world().run(\"scenarios/{}.scen.json\")?;
+
+    Ok(())
 }}",
         scenario_file_name.to_case(Case::Snake),
         scenario_file_name,
@@ -34,8 +36,10 @@ fn {}_rs() {{
 pub fn format_test_fn_go(scenario_file_name: &str) -> String {
     format!(
         "
-fn {}_go() {{
-    world().run(\"scenarios/{}.scen.json\");
+fn {}_go() -> anyhow::Result<()> {{
+    world().run(\"scenarios/{}.scen.json\")?;
+
+    Ok(())
 }}",
         scenario_file_name.to_case(Case::Snake),
         scenario_file_name,

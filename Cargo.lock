@@ -97,6 +97,7 @@ dependencies = [
 name = "alloc-features"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "esdt-system-sc-mock",
  "multiversx-sc",
  "multiversx-sc-scenario",
@@ -257,6 +258,7 @@ dependencies = [
 name = "big-float-features"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "esdt-system-sc-mock",
  "multiversx-sc",
  "multiversx-sc-scenario",
@@ -597,6 +599,7 @@ dependencies = [
 name = "crowdfunding-erc20"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "erc20",
  "multiversx-sc",
  "multiversx-sc-scenario",
@@ -825,6 +828,7 @@ checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 name = "erc1155"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "erc1155-user-mock",
  "multiversx-sc",
  "multiversx-sc-scenario",
@@ -834,6 +838,7 @@ dependencies = [
 name = "erc1155-marketplace"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "erc1155",
  "multiversx-sc",
  "multiversx-sc-scenario",
@@ -892,6 +897,7 @@ dependencies = [
 name = "erc721"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "multiversx-sc",
  "multiversx-sc-scenario",
 ]
@@ -918,6 +924,7 @@ dependencies = [
 name = "esdt-contract-pair"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "first-contract",
  "multiversx-sc",
  "multiversx-sc-scenario",
@@ -928,6 +935,7 @@ dependencies = [
 name = "esdt-system-sc-mock"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "multiversx-sc",
  "multiversx-sc-scenario",
 ]
@@ -1055,6 +1063,7 @@ dependencies = [
 name = "formatted-message-features"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "multiversx-sc",
  "multiversx-sc-scenario",
 ]
@@ -1071,6 +1080,7 @@ dependencies = [
 name = "forwarder"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "multiversx-sc",
  "multiversx-sc-scenario",
  "vault",
@@ -1575,6 +1585,7 @@ dependencies = [
 name = "large-storage"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "multiversx-sc",
  "multiversx-sc-scenario",
 ]
@@ -1603,6 +1614,7 @@ checksum = "302d7ab3130588088d277783b1e2d2e10c9e9e4a16dd9050e6ec93fb3e7048f4"
 name = "linked-list-repeat"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "benchmark-common",
  "multiversx-sc",
  "multiversx-sc-scenario",
@@ -1658,6 +1670,7 @@ checksum = "b5e6163cb8c49088c2c36f57875e58ccd8c87c7427f7fbd50ea6710b2f3f2e8f"
 name = "lottery-erc20"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "erc20",
  "multiversx-sc",
  "multiversx-sc-scenario",
@@ -1692,6 +1705,7 @@ dependencies = [
 name = "managed-map-features"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "esdt-system-sc-mock",
  "multiversx-sc",
  "multiversx-sc-scenario",
@@ -1709,6 +1723,7 @@ dependencies = [
 name = "map-repeat"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "benchmark-common",
  "multiversx-sc",
  "multiversx-sc-scenario",
@@ -1767,6 +1782,7 @@ dependencies = [
 name = "multi-contract-features"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "multiversx-sc",
  "multiversx-sc-scenario",
 ]
@@ -1858,6 +1874,7 @@ checksum = "b59072fa0624b55ae5ae3fa6bfa91515bbeb4ac440214bc4a509e2c8806d6e9f"
 name = "multiversx-price-aggregator-sc"
 version = "0.45.1"
 dependencies = [
+ "anyhow",
  "arrayvec",
  "getrandom",
  "multiversx-sc",
@@ -1973,6 +1990,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
+ "thiserror",
  "tokio",
 ]
 
@@ -2025,6 +2043,7 @@ dependencies = [
 name = "multiversx-wegld-swap-sc"
 version = "0.45.1"
 dependencies = [
+ "anyhow",
  "multiversx-sc",
  "multiversx-sc-modules",
  "multiversx-sc-scenario",
@@ -2256,6 +2275,7 @@ dependencies = [
 name = "panic-message-features"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "multiversx-sc",
  "multiversx-sc-scenario",
 ]
@@ -2319,6 +2339,7 @@ checksum = "8835116a5c179084a830efb3adc117ab007512b535bc1a21c991d3b32a6b44dd"
 name = "payable-features"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "multiversx-sc",
  "multiversx-sc-scenario",
 ]
@@ -2493,6 +2514,7 @@ dependencies = [
 name = "queue-repeat"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "benchmark-common",
  "multiversx-sc",
  "multiversx-sc-scenario",
@@ -2861,6 +2883,7 @@ checksum = "836fa6a3e1e547f9a2c4040802ec865b5d85f4014efe00555d7090a3dcaa1090"
 name = "send-tx-repeat"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "multiversx-sc",
  "multiversx-sc-scenario",
 ]
@@ -2941,6 +2964,7 @@ dependencies = [
 name = "set-repeat"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "benchmark-common",
  "multiversx-sc",
  "multiversx-sc-scenario",
@@ -2997,6 +3021,7 @@ dependencies = [
 name = "single-value-repeat"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "benchmark-common",
  "multiversx-sc",
  "multiversx-sc-scenario",
@@ -3059,6 +3084,7 @@ dependencies = [
 name = "str-repeat"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "multiversx-sc",
  "multiversx-sc-scenario",
 ]
@@ -3135,6 +3161,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ff1bc3d3f05aff0403e8ac0d92ced918ec05b666a43f83297ccef5bea8a3d449"
 dependencies = [
  "winapi-util",
+]
+
+[[package]]
+name = "thiserror"
+version = "1.0.50"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f9a7210f5c9a7156bb50aa36aed4c95afb51df0df00713949448cf9e97d382d2"
+dependencies = [
+ "thiserror-impl",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "1.0.50"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "266b2e40bc00e5a6c09c3584011e08b06f123c00362c92b975ba9843aaaa14b8"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -3287,6 +3333,7 @@ dependencies = [
 name = "transfer-role-features"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "multiversx-sc",
  "multiversx-sc-modules",
  "multiversx-sc-scenario",
@@ -3402,6 +3449,7 @@ checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
 name = "vec-repeat"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "benchmark-common",
  "multiversx-sc",
  "multiversx-sc-scenario",

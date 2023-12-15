@@ -11,6 +11,8 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn large_storage_rs() {
-    world().run("scenarios/large_storage.scen.json");
+fn large_storage_rs() -> anyhow::Result<()> {
+    world().run("scenarios/large_storage.scen.json")?;
+
+    Ok(())
 }

@@ -101,7 +101,7 @@ fn test_token_merge() -> anyhow::Result<()> {
                     .owner(OWNER_ADDRESS_EXPR)
                     .esdt_roles(MERGED_TOKEN_ID_EXPR, roles),
             ),
-    );
+    )?;
 
     world.whitebox_call(
         &use_module_whitebox,
@@ -116,7 +116,7 @@ fn test_token_merge() -> anyhow::Result<()> {
                 .mergeable_tokens_whitelist()
                 .insert(managed_token_id!(FUNGIBLE_TOKEN_ID));
         },
-    );
+    )?;
 
     // merge two NFTs
     let nft_transfers = vec![
@@ -171,7 +171,7 @@ fn test_token_merge() -> anyhow::Result<()> {
                 managed_biguint!(SECOND_ROYALTIES)
             );
         },
-    );
+    )?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USER_ADDRESS_EXPR,
@@ -181,7 +181,7 @@ fn test_token_merge() -> anyhow::Result<()> {
             NFT_AMOUNT,
             Option::<&Empty>::None,
         ),
-    ));
+    ))?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USE_MODULE_ADDRESS_EXPR,
@@ -191,7 +191,7 @@ fn test_token_merge() -> anyhow::Result<()> {
             NFT_AMOUNT,
             Some(FIRST_ATTRIBUTES),
         ),
-    ));
+    ))?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USE_MODULE_ADDRESS_EXPR,
@@ -201,7 +201,7 @@ fn test_token_merge() -> anyhow::Result<()> {
             NFT_AMOUNT,
             Some(SECOND_ATTRIBUTES),
         ),
-    ));
+    ))?;
 
     // split nfts
     world.whitebox_call(
@@ -226,7 +226,7 @@ fn test_token_merge() -> anyhow::Result<()> {
             ));
             assert_eq!(output_tokens, expected_output_tokens);
         },
-    );
+    )?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USER_ADDRESS_EXPR,
@@ -236,7 +236,7 @@ fn test_token_merge() -> anyhow::Result<()> {
             NFT_AMOUNT,
             Some(FIRST_ATTRIBUTES),
         ),
-    ));
+    ))?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USER_ADDRESS_EXPR,
@@ -246,7 +246,7 @@ fn test_token_merge() -> anyhow::Result<()> {
             NFT_AMOUNT,
             Some(SECOND_ATTRIBUTES),
         ),
-    ));
+    ))?;
 
     // merge the NFT with fungible
     let esdt_transfers = vec![
@@ -301,7 +301,7 @@ fn test_token_merge() -> anyhow::Result<()> {
                 managed_biguint!(FIRST_ROYALTIES)
             );
         },
-    );
+    )?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USER_ADDRESS_EXPR,
@@ -311,7 +311,7 @@ fn test_token_merge() -> anyhow::Result<()> {
             NFT_AMOUNT,
             Option::<&Empty>::None,
         ),
-    ));
+    ))?;
 
     // merge NFT with an already merged token
     let combined_transfers = vec![
@@ -371,7 +371,7 @@ fn test_token_merge() -> anyhow::Result<()> {
                 managed_biguint!(SECOND_ROYALTIES)
             );
         },
-    );
+    )?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USER_ADDRESS_EXPR,
@@ -381,7 +381,7 @@ fn test_token_merge() -> anyhow::Result<()> {
             NFT_AMOUNT,
             Option::<&Empty>::None,
         ),
-    ));
+    ))?;
 
     world.whitebox_call(
         &use_module_whitebox,
@@ -411,7 +411,7 @@ fn test_token_merge() -> anyhow::Result<()> {
 
             assert_eq!(output_tokens, expected_output_tokens);
         },
-    );
+    )?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USER_ADDRESS_EXPR,
@@ -421,7 +421,7 @@ fn test_token_merge() -> anyhow::Result<()> {
             NFT_AMOUNT,
             Some(FIRST_ATTRIBUTES),
         ),
-    ));
+    ))?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USER_ADDRESS_EXPR,
@@ -491,7 +491,7 @@ fn test_partial_split() -> anyhow::Result<()> {
                     .owner(OWNER_ADDRESS_EXPR)
                     .esdt_roles(MERGED_TOKEN_ID_EXPR, roles),
             ),
-    );
+    )?;
 
     world.whitebox_call(
         &use_module_whitebox,
@@ -506,7 +506,7 @@ fn test_partial_split() -> anyhow::Result<()> {
                 .mergeable_tokens_whitelist()
                 .insert(managed_token_id!(FUNGIBLE_TOKEN_ID));
         },
-    );
+    )?;
 
     // merge 2 NFTs and a fungible token
     let esdt_transfers = vec![
@@ -566,7 +566,7 @@ fn test_partial_split() -> anyhow::Result<()> {
             let actual_uri = MergedTokenInstances::decode_from_first_uri(&merged_token_data.uris);
             assert_eq!(expected_uri, actual_uri.into_instances());
         },
-    );
+    )?;
 
     // split part of the fungible token
     world.whitebox_call(
@@ -711,7 +711,7 @@ fn test_custom_attributes() -> anyhow::Result<()> {
                     .owner(OWNER_ADDRESS_EXPR)
                     .esdt_roles(MERGED_TOKEN_ID_EXPR, roles),
             ),
-    );
+    )?;
 
     world.whitebox_call(
         &use_module_whitebox,
@@ -726,7 +726,7 @@ fn test_custom_attributes() -> anyhow::Result<()> {
                 .mergeable_tokens_whitelist()
                 .insert(managed_token_id!(FUNGIBLE_TOKEN_ID));
         },
-    );
+    )?;
 
     // merge two NFTs
     let nft_transfers = vec![
@@ -789,7 +789,7 @@ fn test_custom_attributes() -> anyhow::Result<()> {
                 managed_biguint!(SECOND_ROYALTIES)
             );
         },
-    );
+    )?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USER_ADDRESS_EXPR,
@@ -799,7 +799,7 @@ fn test_custom_attributes() -> anyhow::Result<()> {
             NFT_AMOUNT,
             Some(top_encode_to_vec_u8_or_panic(&expected_attributes)),
         ),
-    ));
+    ))?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USE_MODULE_ADDRESS_EXPR,
@@ -809,7 +809,7 @@ fn test_custom_attributes() -> anyhow::Result<()> {
             NFT_AMOUNT,
             Some(FIRST_ATTRIBUTES),
         ),
-    ));
+    ))?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USE_MODULE_ADDRESS_EXPR,

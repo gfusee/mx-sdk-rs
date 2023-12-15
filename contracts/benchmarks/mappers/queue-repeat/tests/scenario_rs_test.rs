@@ -12,11 +12,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn queue_repeat_rs() {
-    world().run("scenarios/queue_repeat.scen.json");
+fn queue_repeat_rs() -> anyhow::Result<()> {
+    world().run("scenarios/queue_repeat.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn queue_repeat_struct_rs() {
-    world().run("scenarios/queue_repeat_struct.scen.json");
+fn queue_repeat_struct_rs() -> anyhow::Result<()> {
+    world().run("scenarios/queue_repeat_struct.scen.json")?;
+
+    Ok(())
 }

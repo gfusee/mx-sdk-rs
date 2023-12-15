@@ -85,7 +85,8 @@ impl VMHooksHandlerSource for DebugApiVMHooksHandler {
 
     fn account_data(&self, address: &VMAddress) -> Option<AccountData> {
         self.0
-            .with_account_or_else(address, |account| Some(account.clone()), || None)
+            .with_account_or_else(address, |account| Ok(Some(account.clone())), || Ok(None))
+            .unwrap()
     }
 
     fn account_code(&self, address: &VMAddress) -> Vec<u8> {

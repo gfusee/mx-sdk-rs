@@ -32,6 +32,7 @@ colored = "2.0"
 clap = { version = "4.4.7", features = ["derive"] }
 tokio = { version = "1.24", features = ["full"] }
 anyhow = "1.0.75"
+thiserror = "1.0.50"
 
 [[bin]]
 name = "sc-scenario"

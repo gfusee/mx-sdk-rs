@@ -37,7 +37,7 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn test_transfer_role() {
+fn test_transfer_role() -> anyhow::Result<()> {
     let mut world = world();
 
     world.set_state_step(
@@ -50,7 +50,7 @@ fn test_transfer_role() {
                     .nonce(1)
                     .esdt_balance(TRANSFER_TOKEN_ID_EXPR, 1_000u64),
             ),
-    );
+    )?;
 
     // vault
     let vault_code = world.code_expression(VAULT_PATH_EXPR);
@@ -62,7 +62,7 @@ fn test_transfer_role() {
     world.set_state_step(
         SetStateStep::new()
             .put_account(VAULT_ADDRESS_EXPR, Account::new().nonce(1).code(vault_code)),
-    );
+    )?;
 
     let transfer_role_features_whitebox = WhiteboxContract::new(
         TRANSFER_ROLE_FEATURES_ADDRESS_EXPR,
@@ -87,7 +87,7 @@ fn test_transfer_role() {
 
             sc.init(whitelist);
         },
-    );
+    )?;
 
     // transfer to user - ok
     world.whitebox_call(
@@ -108,16 +108,16 @@ fn test_transfer_role() {
                 managed_buffer!(b"enjoy"),
             );
         },
-    );
+    )?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USER_ADDRESS_EXPR,
         CheckAccount::new().esdt_balance(TRANSFER_TOKEN_ID_EXPR, "900"),
-    ));
+    ))?;
     world.check_state_step(CheckStateStep::new().put_account(
         OWNER_ADDRESS_EXPR,
         CheckAccount::new().esdt_balance(TRANSFER_TOKEN_ID_EXPR, "100"),
-    ));
+    ))?;
 
     // transfer to user - err, not whitelisted
     world.whitebox_call_check(
@@ -142,7 +142,7 @@ fn test_transfer_role() {
         |r| {
             r.assert_user_error("Destination address not whitelisted");
         },
-    );
+    )?;
 
     // transfer to sc - ok
     world.whitebox_call(
@@ -165,16 +165,16 @@ fn test_transfer_role() {
                 None,
             );
         },
-    );
+    )?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USER_ADDRESS_EXPR,
         CheckAccount::new().esdt_balance(TRANSFER_TOKEN_ID_EXPR, "800"),
-    ));
+    ))?;
     world.check_state_step(CheckStateStep::new().put_account(
         VAULT_ADDRESS_EXPR,
         CheckAccount::new().esdt_balance(TRANSFER_TOKEN_ID_EXPR, "100"),
-    ));
+    ))?;
 
     // transfer to sc - reject
     world.whitebox_call(
@@ -197,16 +197,18 @@ fn test_transfer_role() {
                 None,
             );
         },
-    );
+    )?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USER_ADDRESS_EXPR,
         CheckAccount::new().esdt_balance(TRANSFER_TOKEN_ID_EXPR, "800"),
-    ));
+    ))?;
     world.check_state_step(CheckStateStep::new().put_account(
         VAULT_ADDRESS_EXPR,
         CheckAccount::new().esdt_balance(TRANSFER_TOKEN_ID_EXPR, "100"),
-    ));
+    ))?;
+
+    Ok(())
 }
 
 fn address_expr_to_address(address_expr: &str) -> Address {

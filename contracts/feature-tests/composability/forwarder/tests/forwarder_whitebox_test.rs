@@ -24,7 +24,7 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn test_nft_update_attributes_and_send() {
+fn test_nft_update_attributes_and_send() -> anyhow::Result<()> {
     let mut world = world();
 
     let forwarder_code = world.code_expression(FORWARDER_PATH_EXPR);
@@ -43,7 +43,7 @@ fn test_nft_update_attributes_and_send() {
                     .code(forwarder_code)
                     .esdt_roles(NFT_TOKEN_ID_EXPR, roles),
             ),
-    );
+    )?;
 
     let forwarder_whitebox = WhiteboxContract::new(FORWARDER_ADDRESS_EXPR, forwarder::contract_obj);
 
@@ -66,7 +66,7 @@ fn test_nft_update_attributes_and_send() {
                 &managed_biguint!(1),
             );
         },
-    );
+    )?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USER_ADDRESS_EXPR,
@@ -76,7 +76,7 @@ fn test_nft_update_attributes_and_send() {
             "1",
             Some(original_attributes),
         ),
-    ));
+    ))?;
 
     let new_attributes = Color {
         r: 255,
@@ -99,7 +99,7 @@ fn test_nft_update_attributes_and_send() {
                 &managed_biguint!(1),
             );
         },
-    );
+    )?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         USER_ADDRESS_EXPR,
@@ -109,7 +109,9 @@ fn test_nft_update_attributes_and_send() {
             "1",
             Some(new_attributes),
         ),
-    ));
+    ))?;
+
+    Ok(())
 }
 
 fn address_expr_to_address(address_expr: &str) -> Address {

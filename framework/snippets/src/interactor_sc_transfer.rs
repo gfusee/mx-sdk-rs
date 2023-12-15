@@ -4,7 +4,7 @@ use multiversx_sc_scenario::{scenario::ScenarioRunner, scenario_model::TransferS
 
 impl Interactor {
     pub async fn transfer(&mut self, transfer_step: TransferStep) -> String {
-        self.pre_runners.run_transfer_step(&transfer_step);
+        self.pre_runners.run_transfer_step(&transfer_step).unwrap();
 
         let sender_address = &transfer_step.tx.from.value;
         let mut transaction = self.tx_call_to_blockchain_tx(&transfer_step.tx.to_tx_call());
@@ -16,7 +16,7 @@ impl Interactor {
 
         self.retrieve_tx_on_network(tx_hash.clone()).await;
 
-        self.post_runners.run_transfer_step(&transfer_step);
+        self.post_runners.run_transfer_step(&transfer_step).unwrap();
 
         tx_hash
     }

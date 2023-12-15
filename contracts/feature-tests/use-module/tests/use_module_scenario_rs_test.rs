@@ -44,48 +44,66 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn use_module_claim_developer_rewards_rs() {
-    world().run("scenarios/use_module_claim_developer_rewards.scen.json");
+fn use_module_claim_developer_rewards_rs() -> anyhow::Result<()> {
+    world().run("scenarios/use_module_claim_developer_rewards.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn use_module_dns_register_rs() {
-    world().run("scenarios/use_module_dns_register.scen.json");
+fn use_module_dns_register_rs() -> anyhow::Result<()> {
+    world().run("scenarios/use_module_dns_register.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn use_module_features_rs() {
-    world().run("scenarios/use_module_features.scen.json");
+fn use_module_features_rs() -> anyhow::Result<()> {
+    world().run("scenarios/use_module_features.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn use_module_internal_rs() {
-    world().run("scenarios/use_module_internal.scen.json");
+fn use_module_internal_rs() -> anyhow::Result<()> {
+    world().run("scenarios/use_module_internal.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn use_module_no_endpoint_rs() {
-    world().run("scenarios/use_module_no_endpoint.scen.json");
+fn use_module_no_endpoint_rs() -> anyhow::Result<()> {
+    world().run("scenarios/use_module_no_endpoint.scen.json")?;
+
+    Ok(())
 }
 
 /// Will not work in scenarios-rs, since there is no gas usage
 #[test]
 #[ignore]
-fn use_module_ongoing_operation_example_rs() {
-    world().run("scenarios/use_module_ongoing_operation_example.scen.json");
+fn use_module_ongoing_operation_example_rs() -> anyhow::Result<()> {
+    world().run("scenarios/use_module_ongoing_operation_example.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn use_module_only_admin_rs() {
-    world().run("scenarios/use_module_only_admin.scen.json");
+fn use_module_only_admin_rs() -> anyhow::Result<()> {
+    world().run("scenarios/use_module_only_admin.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn use_module_only_owner_rs() {
-    world().run("scenarios/use_module_only_owner.scen.json");
+fn use_module_only_owner_rs() -> anyhow::Result<()> {
+    world().run("scenarios/use_module_only_owner.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn use_module_pause_rs() {
-    world().run("scenarios/use_module_pause.scen.json");
+fn use_module_pause_rs() -> anyhow::Result<()> {
+    world().run("scenarios/use_module_pause.scen.json")?;
+
+    Ok(())
 }

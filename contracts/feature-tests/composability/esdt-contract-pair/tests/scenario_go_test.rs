@@ -5,27 +5,37 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn init_go() {
-    world().run("scenarios/init.scen.json");
+fn init_go() -> anyhow::Result<()> {
+    world().run("scenarios/init.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
 #[ignore]
-fn reject_transfer_go() {
-    world().run("scenarios/reject_transfer.scen.json");
+fn reject_transfer_go() -> anyhow::Result<()> {
+    world().run("scenarios/reject_transfer.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn simple_transfer_full_go() {
-    world().run("scenarios/simple_transfer_full.scen.json");
+fn simple_transfer_full_go() -> anyhow::Result<()> {
+    world().run("scenarios/simple_transfer_full.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn simple_transfer_full_wrong_token_go() {
-    world().run("scenarios/simple_transfer_full_wrong_token.scen.json");
+fn simple_transfer_full_wrong_token_go() -> anyhow::Result<()> {
+    world().run("scenarios/simple_transfer_full_wrong_token.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn simple_transfer_half_go() {
-    world().run("scenarios/simple_transfer_half.scen.json");
+fn simple_transfer_half_go() -> anyhow::Result<()> {
+    world().run("scenarios/simple_transfer_half.scen.json")?;
+
+    Ok(())
 }

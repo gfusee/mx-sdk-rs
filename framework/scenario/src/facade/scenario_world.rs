@@ -48,7 +48,7 @@ impl ScenarioWorld {
             backend: Backend::Debugger(DebuggerBackend {
                 vm_runner: ScenarioVMRunner::new(),
                 trace: None,
-            }),
+            })
         }
     }
 

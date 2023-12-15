@@ -13,48 +13,66 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn big_float_new_from_big_int_rs() {
-    world().run("scenarios/big_float_new_from_big_int.scen.json");
+fn big_float_new_from_big_int_rs() -> anyhow::Result<()> {
+    world().run("scenarios/big_float_new_from_big_int.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn big_float_new_from_big_uint_rs() {
-    world().run("scenarios/big_float_new_from_big_uint.scen.json");
+fn big_float_new_from_big_uint_rs() -> anyhow::Result<()> {
+    world().run("scenarios/big_float_new_from_big_uint.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn big_float_new_from_frac_rs() {
-    world().run("scenarios/big_float_new_from_frac.scen.json");
+fn big_float_new_from_frac_rs() -> anyhow::Result<()> {
+    world().run("scenarios/big_float_new_from_frac.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn big_float_new_from_int_rs() {
-    world().run("scenarios/big_float_new_from_int.scen.json");
-}
+fn big_float_new_from_int_rs() -> anyhow::Result<()> {
+    world().run("scenarios/big_float_new_from_int.scen.json")?;
 
-#[test]
-#[ignore]
-fn big_float_new_from_managed_buffer_rs() {
-    world().run("scenarios/big_float_new_from_managed_buffer.scen.json");
-}
-
-#[test]
-fn big_float_new_from_parts_rs() {
-    world().run("scenarios/big_float_new_from_parts.scen.json");
-}
-
-#[test]
-fn big_float_new_from_sci_rs() {
-    world().run("scenarios/big_float_new_from_sci.scen.json");
+    Ok(())
 }
 
 #[test]
 #[ignore]
-fn big_float_operator_checks_rs() {
-    world().run("scenarios/big_float_operator_checks.scen.json");
+fn big_float_new_from_managed_buffer_rs() -> anyhow::Result<()> {
+    world().run("scenarios/big_float_new_from_managed_buffer.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn big_float_operators_rs() {
-    world().run("scenarios/big_float_operators.scen.json");
+fn big_float_new_from_parts_rs() -> anyhow::Result<()> {
+    world().run("scenarios/big_float_new_from_parts.scen.json")?;
+
+    Ok(())
+}
+
+#[test]
+fn big_float_new_from_sci_rs() -> anyhow::Result<()> {
+    world().run("scenarios/big_float_new_from_sci.scen.json")?;
+
+    Ok(())
+}
+
+#[test]
+#[ignore]
+fn big_float_operator_checks_rs() -> anyhow::Result<()> {
+    world().run("scenarios/big_float_operator_checks.scen.json")?;
+
+    Ok(())
+}
+
+#[test]
+fn big_float_operators_rs() -> anyhow::Result<()> {
+    world().run("scenarios/big_float_operators.scen.json")?;
+
+    Ok(())
 }

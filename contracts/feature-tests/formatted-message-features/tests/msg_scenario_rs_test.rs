@@ -13,11 +13,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn managed_error_message_rs() {
-    world().run("scenarios/managed_error_message.scen.json");
+fn managed_error_message_rs() -> anyhow::Result<()> {
+    world().run("scenarios/managed_error_message.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn sc_format_rs() {
-    world().run("scenarios/sc_format.scen.json");
+fn sc_format_rs() -> anyhow::Result<()> {
+    world().run("scenarios/sc_format.scen.json")?;
+
+    Ok(())
 }

@@ -9,8 +9,10 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn test_1_go() {
-    world().run("scenarios/test1.scen.json");
+fn test_1_go() -> anyhow::Result<()> {
+    world().run("scenarios/test1.scen.json")?;
+
+    Ok(())
 }
 "#;
 
@@ -21,18 +23,24 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn test_0_go() {
-    world().run("scenarios/test0.scen.json");
+fn test_0_go() -> anyhow::Result<()> {
+    world().run("scenarios/test0.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn test_1_go() {
-    world().run("scenarios/test1.scen.json");
+fn test_1_go() -> anyhow::Result<()> {
+    world().run("scenarios/test1.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn test_2_go() {
-    world().run("scenarios/test2.scen.json");
+fn test_2_go() -> anyhow::Result<()> {
+    world().run("scenarios/test2.scen.json")?;
+
+    Ok(())
 }
 "#;
 

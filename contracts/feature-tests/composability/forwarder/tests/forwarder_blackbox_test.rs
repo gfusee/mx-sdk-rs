@@ -31,7 +31,7 @@ struct ForwarderTestState {
 }
 
 impl ForwarderTestState {
-    fn new() -> Self {
+    fn new() -> anyhow::Result<Self> {
         let mut world = world();
 
         let forwarder_code = world.code_expression(FORWARDER_PATH_EXPR);
@@ -50,20 +50,22 @@ impl ForwarderTestState {
                         .code(forwarder_code)
                         .esdt_roles(NFT_TOKEN_ID_EXPR, roles),
                 ),
-        );
+        )?;
 
         let forwarder_contract = ForwarderContract::new(FORWARDER_ADDRESS_EXPR);
 
-        Self {
-            world,
-            forwarder_contract,
-        }
+        Ok(
+            Self {
+                world,
+                forwarder_contract,
+            }
+        )
     }
 }
 
 #[test]
-fn test_nft_update_attributes_and_send() {
-    let mut state = ForwarderTestState::new();
+fn test_nft_update_attributes_and_send() -> anyhow::Result<()> {
+    let mut state = ForwarderTestState::new()?;
 
     let original_attributes = Color { r: 0, g: 0, b: 0 };
 
@@ -73,14 +75,14 @@ fn test_nft_update_attributes_and_send() {
                 .forwarder_contract
                 .nft_create_compact(NFT_TOKEN_ID, 1u64, original_attributes),
         ),
-    );
+    )?;
 
     state.world.transfer_step(
         TransferStep::new()
             .from(FORWARDER_ADDRESS_EXPR)
             .to(USER_ADDRESS_EXPR)
             .esdt_transfer(NFT_TOKEN_ID, 1, "1"),
-    );
+    )?;
 
     state
         .world
@@ -92,7 +94,7 @@ fn test_nft_update_attributes_and_send() {
                 "1",
                 Some(original_attributes),
             ),
-        ));
+        ))?;
 
     let new_attributes = Color {
         r: 255,
@@ -105,7 +107,7 @@ fn test_nft_update_attributes_and_send() {
             .from(USER_ADDRESS_EXPR)
             .to(FORWARDER_ADDRESS_EXPR)
             .esdt_transfer(NFT_TOKEN_ID, 1, "1"),
-    );
+    )?;
 
     state.world.sc_call(
         ScCallStep::new().from(USER_ADDRESS_EXPR).call(
@@ -113,14 +115,14 @@ fn test_nft_update_attributes_and_send() {
                 .forwarder_contract
                 .nft_update_attributes(NFT_TOKEN_ID, 1u64, new_attributes),
         ),
-    );
+    )?;
 
     state.world.transfer_step(
         TransferStep::new()
             .from(FORWARDER_ADDRESS_EXPR)
             .to(USER_ADDRESS_EXPR)
             .esdt_transfer(NFT_TOKEN_ID, 1, "1"),
-    );
+    )?;
 
     state
         .world
@@ -132,5 +134,7 @@ fn test_nft_update_attributes_and_send() {
                 "1",
                 Some(new_attributes),
             ),
-        ));
+        ))?;
+
+    Ok(())
 }

@@ -12,11 +12,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn unwrap_egld_rs() {
-    world().run("scenarios/unwrap_egld.scen.json");
+fn unwrap_egld_rs() -> anyhow::Result<()> {
+    world().run("scenarios/unwrap_egld.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn wrap_egld_rs() {
-    world().run("scenarios/wrap_egld.scen.json");
+fn wrap_egld_rs() -> anyhow::Result<()> {
+    world().run("scenarios/wrap_egld.scen.json")?;
+
+    Ok(())
 }

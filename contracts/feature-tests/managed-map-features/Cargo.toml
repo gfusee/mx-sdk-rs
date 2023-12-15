@@ -19,3 +19,6 @@ path = "../../../framework/scenario"
 
 [dev-dependencies.esdt-system-sc-mock]
 path = "../esdt-system-sc-mock"
+
+[dev-dependencies.anyhow]
+version = "1.0.75"

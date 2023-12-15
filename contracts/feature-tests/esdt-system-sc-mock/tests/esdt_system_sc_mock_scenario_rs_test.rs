@@ -12,6 +12,8 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn esdt_system_sc_rs() {
-    world().run("scenarios/esdt_system_sc.scen.json");
+fn esdt_system_sc_rs() -> anyhow::Result<()> {
+    world().run("scenarios/esdt_system_sc.scen.json")?;
+
+    Ok(())
 }

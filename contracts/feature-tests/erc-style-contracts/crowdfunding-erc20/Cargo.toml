@@ -19,3 +19,5 @@ path = "../../../../framework/base"
 version = "0.45.1"
 path = "../../../../framework/scenario"
 
+[dev-dependencies.anyhow]
+version = "1.0.75"

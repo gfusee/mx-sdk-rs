@@ -5,11 +5,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn set_repeat_go() {
-    world().run("scenarios/set_repeat.scen.json");
+fn set_repeat_go() -> anyhow::Result<()> {
+    world().run("scenarios/set_repeat.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn set_repeat_struct_go() {
-    world().run("scenarios/set_repeat_struct.scen.json");
+fn set_repeat_struct_go() -> anyhow::Result<()> {
+    world().run("scenarios/set_repeat_struct.scen.json")?;
+
+    Ok(())
 }

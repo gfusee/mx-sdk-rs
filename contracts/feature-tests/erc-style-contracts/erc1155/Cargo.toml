@@ -19,3 +19,6 @@ path = "../../../../framework/scenario"
 
 [dev-dependencies.erc1155-user-mock]
 path="../erc1155-user-mock"
+
+[dev-dependencies.anyhow]
+version = "1.0.75"

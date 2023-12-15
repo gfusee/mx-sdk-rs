@@ -95,10 +95,10 @@ impl TxContext {
         self.tx_cache.with_account(address, f)
     }
 
-    pub fn with_account_or_else<R, F, Else>(&self, address: &VMAddress, f: F, or_else: Else) -> R
+    pub fn with_account_or_else<R, F, Else>(&self, address: &VMAddress, f: F, or_else: Else) -> anyhow::Result<R>
     where
-        F: FnOnce(&AccountData) -> R,
-        Else: FnOnce() -> R,
+        F: FnOnce(&AccountData) -> anyhow::Result<R>,
+        Else: FnOnce() -> anyhow::Result<R>,
     {
         self.tx_cache.with_account_or_else(address, f, or_else)
     }

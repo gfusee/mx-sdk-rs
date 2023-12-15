@@ -24,15 +24,15 @@ impl Interactor {
             println!("token identifier: {}", token_identifier);
             let set_state_step = SetStateStep::new().new_token_identifier(token_identifier);
 
-            self.pre_runners.run_set_state_step(&set_state_step);
-            self.post_runners.run_set_state_step(&set_state_step);
+            self.pre_runners.run_set_state_step(&set_state_step).unwrap();
+            self.post_runners.run_set_state_step(&set_state_step).unwrap();
         }
 
-        self.post_runners.run_sc_call_step(sc_call_step);
+        self.post_runners.run_sc_call_step(sc_call_step).unwrap();
     }
 
     async fn launch_sc_call(&mut self, sc_call_step: &mut ScCallStep) -> String {
-        self.pre_runners.run_sc_call_step(sc_call_step);
+        self.pre_runners.run_sc_call_step(sc_call_step).unwrap();
 
         let sender_address = &sc_call_step.tx.from.value;
         let mut transaction = self.tx_call_to_blockchain_tx(&sc_call_step.tx);

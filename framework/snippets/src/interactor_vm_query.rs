@@ -42,8 +42,8 @@ impl Interactor {
         let raw_results: Vec<Vec<u8>> = result.data.return_data.iter().map(base64_decode).collect();
         step.save_response(TxResponse::from_raw_results(raw_results));
 
-        self.pre_runners.run_sc_query_step(step);
-        self.post_runners.run_sc_query_step(step);
+        self.pre_runners.run_sc_query_step(step).unwrap();
+        self.post_runners.run_sc_query_step(step).unwrap();
     }
 
     #[deprecated(since = "0.42.0", note = "Was renamed to `quick_query`.")]

@@ -11,12 +11,14 @@ impl ScenarioWorld {
     /// Imports and processes steps from an external scenario file.
     pub fn external_steps(&mut self, step: ExternalStepsStep) -> anyhow::Result<&mut Self> {
         self.run_external_steps(&step)?;
+
         Ok(self)
     }
 
     /// Adds a SC call step, then executes it.
     pub fn set_state_step(&mut self, step: SetStateStep) -> anyhow::Result<&mut Self> {
         self.run_set_state_step(&step)?;
+
         Ok(self)
     }
 
@@ -26,6 +28,7 @@ impl ScenarioWorld {
         S: AsMut<ScCallStep>,
     {
         self.run_sc_call_step(step.as_mut())?;
+
         Ok(self)
     }
 

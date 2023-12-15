@@ -35,7 +35,7 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn test_staking_module() {
+fn test_staking_module() -> anyhow::Result<()> {
     let mut world = world();
 
     world.set_state_step(
@@ -78,7 +78,7 @@ fn test_staking_module() {
                     .nonce(1)
                     .esdt_balance(STAKING_TOKEN_ID_EXPR, INITIAL_BALANCE),
             ),
-    );
+    )?;
 
     // init
     let use_module_whitebox =
@@ -114,7 +114,7 @@ fn test_staking_module() {
                 &whitelist,
             );
         },
-    );
+    )?;
 
     // try stake - not a board member
     world.whitebox_call_check(
@@ -127,7 +127,7 @@ fn test_staking_module() {
         |r| {
             r.assert_user_error("Only whitelisted members can stake");
         },
-    );
+    )?;
 
     // stake half and try unstake
     world.whitebox_call(
@@ -138,7 +138,7 @@ fn test_staking_module() {
             REQUIRED_STAKE_AMOUNT / 2,
         ),
         |sc| sc.stake(),
-    );
+    )?;
 
     world.whitebox_call_check(
         &use_module_whitebox,
@@ -147,7 +147,7 @@ fn test_staking_module() {
         |r| {
             r.assert_user_error("Not enough stake");
         },
-    );
+    )?;
 
     // bob and carol stake
     world.whitebox_call(
@@ -158,7 +158,7 @@ fn test_staking_module() {
             REQUIRED_STAKE_AMOUNT,
         ),
         |sc| sc.stake(),
-    );
+    )?;
 
     world.whitebox_call(
         &use_module_whitebox,
@@ -168,7 +168,7 @@ fn test_staking_module() {
             REQUIRED_STAKE_AMOUNT,
         ),
         |sc| sc.stake(),
-    );
+    )?;
 
     world.whitebox_call(
         &use_module_whitebox,
@@ -178,7 +178,7 @@ fn test_staking_module() {
             REQUIRED_STAKE_AMOUNT,
         ),
         |sc| sc.stake(),
-    );
+    )?;
 
     world.whitebox_call(
         &use_module_whitebox,
@@ -188,7 +188,7 @@ fn test_staking_module() {
             REQUIRED_STAKE_AMOUNT,
         ),
         |sc| sc.stake(),
-    );
+    )?;
 
     // try vote slash, not enough stake
     world.whitebox_call_check(
@@ -198,7 +198,7 @@ fn test_staking_module() {
         |r| {
             r.assert_user_error("Not enough stake");
         },
-    );
+    )?;
 
     // try vote slash, slashed address not a board member
     world.whitebox_call_check(
@@ -208,7 +208,7 @@ fn test_staking_module() {
         |r| {
             r.assert_user_error("Voted user is not a staked board member");
         },
-    );
+    )?;
 
     // alice stake over max amount and withdraw surplus
     world.whitebox_call(
@@ -227,7 +227,7 @@ fn test_staking_module() {
                 .get();
             assert_eq!(alice_staked_amount, managed_biguint!(1_500_000));
         },
-    );
+    )?;
 
     world.whitebox_call(
         &use_module_whitebox,
@@ -242,12 +242,12 @@ fn test_staking_module() {
                 .get();
             assert_eq!(alice_staked_amount, managed_biguint!(1_000_000));
         },
-    );
+    )?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         ALICE_ADDRESS_EXPR,
         CheckAccount::new().esdt_balance(STAKING_TOKEN_ID_EXPR, "1_000_000"),
-    ));
+    ))?;
 
     // alice vote to slash bob
     world.whitebox_call(
@@ -271,7 +271,7 @@ fn test_staking_module() {
                     ALICE_ADDRESS_EXPR
                 ))));
         },
-    );
+    )?;
 
     // bob vote to slash alice
     world.whitebox_call(
@@ -282,7 +282,7 @@ fn test_staking_module() {
                 ALICE_ADDRESS_EXPR
             )));
         },
-    );
+    )?;
 
     // try slash before quorum reached
     world.whitebox_call_check(
@@ -296,7 +296,7 @@ fn test_staking_module() {
         |r| {
             r.assert_user_error("Quorum not reached");
         },
-    );
+    )?;
 
     // paul vote to slash alice
     world.whitebox_call(
@@ -307,7 +307,7 @@ fn test_staking_module() {
                 ALICE_ADDRESS_EXPR
             )));
         },
-    );
+    )?;
 
     // sally vote to slash alice
     world.whitebox_call(
@@ -318,7 +318,7 @@ fn test_staking_module() {
                 ALICE_ADDRESS_EXPR
             )));
         },
-    );
+    )?;
 
     // sally cancels vote to slash alice
     world.whitebox_call(
@@ -329,7 +329,7 @@ fn test_staking_module() {
                 ALICE_ADDRESS_EXPR
             )));
         },
-    );
+    )?;
 
     // carol vote
     world.whitebox_call(
@@ -376,7 +376,7 @@ fn test_staking_module() {
                     SALLY_ADDRESS_EXPR
                 ))));
         },
-    );
+    )?;
 
     // slash alice
     world.whitebox_call(
@@ -404,7 +404,7 @@ fn test_staking_module() {
                 )))
                 .is_empty());
         },
-    );
+    )?;
 
     // alice try vote after slash
     world.whitebox_call_check(
@@ -416,7 +416,7 @@ fn test_staking_module() {
         |r| {
             r.assert_user_error("Not enough stake");
         },
-    );
+    )?;
 
     // alice try unstake the remaining tokens
     world.whitebox_call_check(
@@ -428,7 +428,7 @@ fn test_staking_module() {
         |r| {
             r.assert_user_error("Not enough stake");
         },
-    );
+    )?;
 
     // alice remove from board members
     world.whitebox_call(
@@ -462,7 +462,7 @@ fn test_staking_module() {
                 )))
                 .is_empty());
         },
-    );
+    )?;
 
     // alice unstake ok
     world.whitebox_call(
@@ -471,12 +471,14 @@ fn test_staking_module() {
         |sc| {
             sc.unstake(managed_biguint!(400_000));
         },
-    );
+    )?;
 
     world.check_state_step(CheckStateStep::new().put_account(
         ALICE_ADDRESS_EXPR,
         CheckAccount::new().esdt_balance(STAKING_TOKEN_ID_EXPR, INITIAL_BALANCE - SLASH_AMOUNT),
-    ));
+    ))?;
+
+    Ok(())
 }
 
 fn address_expr_to_address(address_expr: &str) -> Address {

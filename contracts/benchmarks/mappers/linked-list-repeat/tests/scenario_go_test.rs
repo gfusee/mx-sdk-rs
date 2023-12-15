@@ -5,11 +5,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn linked_list_repeat_go() {
-    world().run("scenarios/linked_list_repeat.scen.json");
+fn linked_list_repeat_go() -> anyhow::Result<()> {
+    world().run("scenarios/linked_list_repeat.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn linked_list_repeat_struct_go() {
-    world().run("scenarios/linked_list_repeat_struct.scen.json");
+fn linked_list_repeat_struct_go() -> anyhow::Result<()> {
+    world().run("scenarios/linked_list_repeat_struct.scen.json")?;
+
+    Ok(())
 }

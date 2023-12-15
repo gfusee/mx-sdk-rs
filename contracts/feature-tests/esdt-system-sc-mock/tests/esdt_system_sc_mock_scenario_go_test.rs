@@ -5,6 +5,8 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn esdt_system_sc_go() {
-    world().run("scenarios/esdt_system_sc.scen.json");
+fn esdt_system_sc_go() -> anyhow::Result<()> {
+    world().run("scenarios/esdt_system_sc.scen.json")?;
+
+    Ok(())
 }

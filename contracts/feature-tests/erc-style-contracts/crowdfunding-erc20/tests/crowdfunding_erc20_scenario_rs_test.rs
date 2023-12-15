@@ -17,21 +17,29 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn deploy_erc_20_and_crowdfunding_rs() {
-    world().run("scenarios/deploy_erc20_and_crowdfunding.scen.json");
+fn deploy_erc_20_and_crowdfunding_rs() -> anyhow::Result<()> {
+    world().run("scenarios/deploy_erc20_and_crowdfunding.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn fund_with_insufficient_allowance_rs() {
-    world().run("scenarios/fund_with_insufficient_allowance.scen.json");
+fn fund_with_insufficient_allowance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/fund_with_insufficient_allowance.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn fund_with_sufficient_allowance_rs() {
-    world().run("scenarios/fund_with_sufficient_allowance.scen.json");
+fn fund_with_sufficient_allowance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/fund_with_sufficient_allowance.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn fund_without_allowance_rs() {
-    world().run("scenarios/fund_without_allowance.scen.json");
+fn fund_without_allowance_rs() -> anyhow::Result<()> {
+    world().run("scenarios/fund_without_allowance.scen.json")?;
+
+    Ok(())
 }

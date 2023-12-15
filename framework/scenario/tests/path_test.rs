@@ -5,11 +5,15 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn local_path_test() {
-    world().run("tests/scenarios-self/path_test.scen.json");
+fn local_path_test() -> anyhow::Result<()> {
+    world().run("tests/scenarios-self/path_test.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn nested_path_test() {
-    world().run("tests/scenarios-self/external_steps/external_path_test.scen.json");
+fn nested_path_test() -> anyhow::Result<()> {
+    world().run("tests/scenarios-self/external_steps/external_path_test.scen.json")?;
+
+    Ok(())
 }

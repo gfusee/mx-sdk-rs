@@ -55,16 +55,20 @@ use std::path::Path;
     since = "0.42.0",
     note = "Call `sc-meta test-gen` in the project folder to automatically upgrade all scenario tests."
 )]
-pub fn run_go<P: AsRef<Path>>(relative_path: P) {
-    ScenarioWorld::vm_go().run(relative_path);
+pub fn run_go<P: AsRef<Path>>(relative_path: P) -> anyhow::Result<()> {
+    ScenarioWorld::vm_go().run(relative_path)?;
+
+    Ok(())
 }
 
 #[deprecated(
     since = "0.39.0",
     note = "Call `sc-meta test-gen` in the project folder to automatically upgrade all scenario tests."
 )]
-pub fn mandos_go<P: AsRef<Path>>(relative_path: P) {
-    ScenarioWorld::vm_go().run(relative_path);
+pub fn mandos_go<P: AsRef<Path>>(relative_path: P)  -> anyhow::Result<()> {
+    ScenarioWorld::vm_go().run(relative_path)?;
+
+    Ok(())
 }
 
 /// Legacy function for running a scenario test using the Go VM tool.
@@ -74,16 +78,20 @@ pub fn mandos_go<P: AsRef<Path>>(relative_path: P) {
     since = "0.42.0",
     note = "Call `sc-meta test-gen` in the project folder to automatically upgrade all scenario tests."
 )]
-pub fn run_rs<P: AsRef<Path>>(relative_path: P, world: ScenarioWorld) {
-    world.run(relative_path);
+pub fn run_rs<P: AsRef<Path>>(relative_path: P, world: ScenarioWorld) -> anyhow::Result<()> {
+    world.run(relative_path)?;
+
+    Ok(())
 }
 
 #[deprecated(
     since = "0.39.0",
     note = "Call `sc-meta test-gen` in the project folder to automatically upgrade all scenario tests."
 )]
-pub fn mandos_rs<P: AsRef<Path>>(relative_path: P, world: ScenarioWorld) {
-    world.run(relative_path);
+pub fn mandos_rs<P: AsRef<Path>>(relative_path: P, world: ScenarioWorld) -> anyhow::Result<()> {
+    world.run(relative_path)?;
+
+    Ok(())
 }
 
 #[deprecated(

@@ -13,22 +13,30 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn test_rs() {
-    world().run("scenarios/test.scen.json");
+fn test_rs() -> anyhow::Result<()> {
+    world().run("scenarios/test.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn test_esdt_generation_rs() {
-    world().run("scenarios/test_esdt_generation.scen.json");
+fn test_esdt_generation_rs() -> anyhow::Result<()> {
+    world().run("scenarios/test_esdt_generation.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn test_multiple_sc_rs() {
-    world().run("scenarios/test_multiple_sc.scen.json");
+fn test_multiple_sc_rs() -> anyhow::Result<()> {
+    world().run("scenarios/test_multiple_sc.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
 #[ignore = "not supported"]
-fn trace_deploy_rs() {
-    world().run("scenarios/trace-deploy.scen.json");
+fn trace_deploy_rs() -> anyhow::Result<()> {
+    world().run("scenarios/trace-deploy.scen.json")?;
+
+    Ok(())
 }

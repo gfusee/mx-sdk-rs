@@ -15,31 +15,43 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn auction_batch_rs() {
-    world().run("scenarios/auction_batch.scen.json");
+fn auction_batch_rs() -> anyhow::Result<()> {
+    world().run("scenarios/auction_batch.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn auction_single_token_egld_rs() {
-    world().run("scenarios/auction_single_token_egld.scen.json");
+fn auction_single_token_egld_rs() -> anyhow::Result<()> {
+    world().run("scenarios/auction_single_token_egld.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn bid_first_egld_rs() {
-    world().run("scenarios/bid_first_egld.scen.json");
+fn bid_first_egld_rs() -> anyhow::Result<()> {
+    world().run("scenarios/bid_first_egld.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn bid_second_egld_rs() {
-    world().run("scenarios/bid_second_egld.scen.json");
+fn bid_second_egld_rs() -> anyhow::Result<()> {
+    world().run("scenarios/bid_second_egld.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn bid_third_egld_rs() {
-    world().run("scenarios/bid_third_egld.scen.json");
+fn bid_third_egld_rs() -> anyhow::Result<()> {
+    world().run("scenarios/bid_third_egld.scen.json")?;
+
+    Ok(())
 }
 
 #[test]
-fn end_auction_rs() {
-    world().run("scenarios/end_auction.scen.json");
+fn end_auction_rs() -> anyhow::Result<()> {
+    world().run("scenarios/end_auction.scen.json")?;
+
+    Ok(())
 }

@@ -5,6 +5,8 @@ fn world() -> ScenarioWorld {
 }
 
 #[test]
-fn large_storage_go() {
-    world().run("scenarios/large_storage.scen.json");
+fn large_storage_go() -> anyhow::Result<()> {
+    world().run("scenarios/large_storage.scen.json")?;
+
+    Ok(())
 }
