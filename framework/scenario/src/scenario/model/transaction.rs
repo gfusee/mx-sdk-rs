@@ -13,6 +13,7 @@ mod tx_response_utils;
 mod tx_transfer;
 mod tx_validator_reward;
 mod typed_response;
+mod tx_outcome;
 
 pub use self::log::*;
 pub use log_check::*;

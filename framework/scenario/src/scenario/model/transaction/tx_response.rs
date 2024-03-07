@@ -4,9 +4,10 @@ use multiversx_sdk::{
     data::transaction::{ApiLogs, ApiSmartContractResult, Events, TransactionOnNetwork},
     utils::base64_decode,
 };
+use crate::scenario_model::transaction::tx_outcome::TransactionOutcome;
 
 use super::{
-    decode_scr_data_or_panic, is_out_scr, process_topics_error, Log, TxExpect, TxResponseStatus,
+    decode_scr_data_or_panic, is_out_scr, process_topics_error, TxExpect, TxResponseStatus,
 };
 
 const SC_DEPLOY_PROCESSING_TYPE: &str = "SCDeployment";
@@ -25,8 +26,6 @@ pub struct TxResponse {
     pub new_issued_token_identifier: Option<String>,
     /// The status of the transaction.
     pub tx_error: TxResponseStatus,
-    /// The logs of the transaction.
-    pub logs: Vec<Log>,
     /// The gas used by the transaction.
     pub gas: u64,
     /// The refund of the transaction.
@@ -35,6 +34,20 @@ pub struct TxResponse {
     pub api_scrs: Vec<ApiSmartContractResult>,
     /// The api logs of the transaction.
     pub api_logs: Option<ApiLogs>,
+}
+
+impl TransactionOutcome for TxResponse {
+    fn get_smart_contract_results(self) -> Vec<ApiSmartContractResult> {
+        self.api_scrs
+    }
+
+    fn get_transaction_logs(self) -> Option<ApiLogs> {
+        self.api_logs
+    }
+
+    fn get_transaction_logs_ref(&self) -> &Option<ApiLogs> {
+        &self.api_logs
+    }
 }
 
 impl TxResponse {

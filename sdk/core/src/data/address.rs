@@ -8,7 +8,7 @@ use serde::{
     ser::{Serialize, Serializer},
 };
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Address([u8; 32]);
 
 impl Address {
