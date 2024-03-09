@@ -1,18 +1,36 @@
 use std::fmt::{Display, Formatter};
 use base64::Engine;
+use multiversx_sc::types::EsdtLocalRole;
+use multiversx_sdk::data::address::Address;
 use multiversx_sdk::data::transaction::{ApiLogs, ApiSmartContractResult, Events};
 
 const SYSTEM_SC_BECH32: &str = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u";
+
+#[derive(PartialEq, Debug, Clone)]
+pub struct RegisterAndSetAllRolesOutcome {
+    token_identifier: String,
+    roles: Vec<EsdtLocalRole>
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub struct SetSpecialRoleOutcome {
+    user_address: Address,
+    token_identifier: String,
+    roles: Vec<EsdtLocalRole>
+}
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum TransactionsOutcomeParserError {
     ErrorInTransaction { data: String, message: String },
     NoEventOfType { r#type: String },
     MoreThanOneEventOfType { r#type: String },
-    CannotExtractTokenIdentifierFromResults { expected_issuance_start_data: String },
+    EventDoesntHaveTopic,
+    CannotExtractTokenIdentifierFromResult,
+    NoIssuedTokenIdentifierInTheResult,
     NoResultToExtractTokenIdentifier { expected_issuance_start_data: String },
     CannotDecodeBase64StringToUTF8 { base64: String },
     CannotDecodeHexStringToUTF8 { hex: String },
+    UnknownRoleFoundInEvent { role: String }
 }
 
 impl Display for TransactionsOutcomeParserError {
@@ -27,8 +45,14 @@ impl Display for TransactionsOutcomeParserError {
             TransactionsOutcomeParserError::MoreThanOneEventOfType { r#type } => {
                 write!(f, "Found more than one event of type {type}")
             },
-            TransactionsOutcomeParserError::CannotExtractTokenIdentifierFromResults { expected_issuance_start_data } => {
-                write!(f, "Cannot extract token identifier from results with expected issuance start data: {expected_issuance_start_data}")
+            TransactionsOutcomeParserError::EventDoesntHaveTopic => {
+                write!(f, "Event doesn't have topic")
+            },
+            TransactionsOutcomeParserError::CannotExtractTokenIdentifierFromResult => {
+                write!(f, "Cannot extract token identifier from result")
+            },
+            TransactionsOutcomeParserError::NoIssuedTokenIdentifierInTheResult => {
+                write!(f, "The given issuance result doesn't contain a token identifier to extract")
             },
             TransactionsOutcomeParserError::NoResultToExtractTokenIdentifier { expected_issuance_start_data } => {
                 write!(f, "No result to extract issued token identifier with expected issuance start data: {expected_issuance_start_data}")
@@ -38,6 +62,9 @@ impl Display for TransactionsOutcomeParserError {
             },
             TransactionsOutcomeParserError::CannotDecodeHexStringToUTF8 { hex } => {
                 write!(f, "Cannot decode hex string to utf8: {hex}")
+            },
+            TransactionsOutcomeParserError::UnknownRoleFoundInEvent { role } => {
+                write!(f, "UnknownRoleFoundInEvent: {role}")
             },
         }
     }
@@ -77,47 +104,117 @@ pub trait TransactionOutcome {
     fn parse_issue_fungible(&self) -> Result<String, TransactionsOutcomeParserError> {
         self.ensure_no_error()?;
 
-        extract_token_identifier_from_scrs(
+        let issuance_result_scr = get_token_issuance_scr(
             self.get_smart_contract_results_ref(),
             "issue@"
-        )
+        )?;
+
+        extract_issued_token_identifier_from_issuance_scr(&issuance_result_scr)
     }
 
     fn parse_issue_non_fungible(&self) -> Result<String, TransactionsOutcomeParserError> {
         self.ensure_no_error()?;
 
-        extract_token_identifier_from_scrs(
+        let issuance_result_scr = get_token_issuance_scr(
             self.get_smart_contract_results_ref(),
             "issueNonFungible@"
-        )
+        )?;
+
+        extract_issued_token_identifier_from_issuance_scr(&issuance_result_scr)
     }
 
     fn parse_issue_semi_fungible(&self) -> Result<String, TransactionsOutcomeParserError> {
         self.ensure_no_error()?;
 
-        extract_token_identifier_from_scrs(
+        let issuance_result_scr = get_token_issuance_scr(
             self.get_smart_contract_results_ref(),
             "issueSemiFungible@"
-        )
+        )?;
+
+        extract_issued_token_identifier_from_issuance_scr(&issuance_result_scr)
     }
 
     fn parse_register_meta_esdt(&self) -> Result<String, TransactionsOutcomeParserError> {
         self.ensure_no_error()?;
 
-        extract_token_identifier_from_scrs(
+        let issuance_result_scr = get_token_issuance_scr(
             self.get_smart_contract_results_ref(),
             "registerMetaESDT@"
+        )?;
+
+        extract_issued_token_identifier_from_issuance_scr(&issuance_result_scr)
+    }
+
+    fn parse_register_and_set_all_roles(&self) -> Result<RegisterAndSetAllRolesOutcome, TransactionsOutcomeParserError> {
+        self.ensure_no_error()?;
+
+        let issuance_result_scr = get_token_issuance_scr(
+            self.get_smart_contract_results_ref(),
+            "registerAndSetAllRoles@"
+        )?;
+
+        let token_identifier = extract_issued_token_identifier_from_issuance_scr(&issuance_result_scr)?;
+        let set_roles_event = find_single_event_by_identifier(
+            self.get_transaction_logs_ref(),
+            self.get_smart_contract_results_ref(),
+            "ESDTSetRole"
+        )?;
+        let roles = extract_roles_from_log(&set_roles_event)?;
+
+        Ok(
+            RegisterAndSetAllRolesOutcome {
+                token_identifier,
+                roles,
+            }
         )
     }
 
+    fn parse_set_burn_role_globally(&self) -> Result<(), TransactionsOutcomeParserError> {
+        // This is how it is implemented in the JS SDK
+        // TODO: provide a concrete implementation or remove this function
+        self.ensure_no_error()
+    }
+
+    fn parse_unset_burn_role_globally(&self) -> Result<(), TransactionsOutcomeParserError> {
+        // This is how it is implemented in the JS SDK
+        // TODO: provide a concrete implementation or remove this function
+        self.ensure_no_error()
+    }
+
+    fn parse_set_special_roles(&self) -> Result<SetSpecialRoleOutcome, TransactionsOutcomeParserError> {
+        self.ensure_no_error()?;
+
+        let set_roles_event = find_single_event_by_identifier(
+            self.get_transaction_logs_ref(),
+            self.get_smart_contract_results_ref(),
+            "ESDTSetRole"
+        )?;
+        let token_identifier = extract_issued_token_identifier_from_set_special_role_event(&set_roles_event)?;
+        let roles = extract_roles_from_log(&set_roles_event)?;
+
+        Ok(
+            SetSpecialRoleOutcome {
+                user_address: set_roles_event.address,
+                token_identifier,
+                roles,
+            }
+        )
+    }
 }
 
-fn find_single_event_by_identifier(api_logs: &Option<ApiLogs>, identifier: &str) -> Result<Events, TransactionsOutcomeParserError> {
+fn find_single_event_by_identifier(api_logs: &Option<ApiLogs>, scrs: &[ApiSmartContractResult], identifier: &str) -> Result<Events, TransactionsOutcomeParserError> {
     let Some(logs) = api_logs else {
         return Err(TransactionsOutcomeParserError::NoEventOfType { r#type: identifier.to_string() })
     };
 
-    let mut filtered: Vec<&Events> = logs.events.iter()
+    let mut scrs_logs_iters: Vec<core::slice::Iter<Events>> = vec![];
+    for scr in scrs {
+        if let Some(scr_logs) = scr.logs.as_ref() {
+            scrs_logs_iters.push(scr_logs.events.iter())
+        }
+    }
+
+    let mut filtered: Vec<&Events> = logs.events.iter().chain(scrs_logs_iters.into_iter().flatten())
         .filter(|e| e.identifier == identifier)
         .collect();
 
@@ -132,7 +229,9 @@ fn find_single_event_by_identifier(api_logs: &Option<ApiLogs>, identifier: &str)
     Ok(filtered.remove(0).clone())
 }
 
-fn extract_token_identifier_from_scrs(scrs: &[ApiSmartContractResult], expected_issuance_start_data: &str) -> Result<String, TransactionsOutcomeParserError> {
+fn get_token_issuance_scr(scrs: &[ApiSmartContractResult], expected_issuance_start_data: &str) -> Result<ApiSmartContractResult, TransactionsOutcomeParserError> {
+    let expected_result_start_data = vec!["ESDTTransfer@", "@00@"];
+
     for scr in scrs {
         if scr.sender.to_string() != SYSTEM_SC_BECH32 {
             continue;
@@ -146,24 +245,67 @@ fn extract_token_identifier_from_scrs(scrs: &[ApiSmartContractResult], expected_
             continue;
         }
 
-        if scr.data.starts_with("ESDTTransfer@") {
-            let opt_encoded_tid = scr.data.split('@').nth(1);
-            let Some(encoded_tid) = opt_encoded_tid else {
-                return Err(TransactionsOutcomeParserError::CannotExtractTokenIdentifierFromResults { expected_issuance_start_data: expected_issuance_start_data.to_string() });
-            };
-
-            return hex_to_utf8(encoded_tid)
-        } else if scr.data.starts_with("@00@") {
-            let opt_encoded_tid = scr.data.split('@').nth(2);
-            let Some(encoded_tid) = opt_encoded_tid else {
-                return Err(TransactionsOutcomeParserError::CannotExtractTokenIdentifierFromResults { expected_issuance_start_data: expected_issuance_start_data.to_string() });
-            };
-
-            return hex_to_utf8(encoded_tid)
+        for expected_start_data in expected_result_start_data.iter() {
+            if scr.data.starts_with(expected_start_data) {
+                return Ok(scr.clone())
+            }
         }
     }
 
     Err(TransactionsOutcomeParserError::NoResultToExtractTokenIdentifier { expected_issuance_start_data: expected_issuance_start_data.to_string() })
+}
+
+fn extract_issued_token_identifier_from_issuance_scr(issuance_result_scr: &ApiSmartContractResult) -> Result<String, TransactionsOutcomeParserError> {
+    if issuance_result_scr.data.starts_with("ESDTTransfer@") {
+        let opt_encoded_tid = issuance_result_scr.data.split('@').nth(1);
+        let Some(encoded_tid) = opt_encoded_tid else {
+            return Err(TransactionsOutcomeParserError::CannotExtractTokenIdentifierFromResult);
+        };
+
+        return hex_to_utf8(encoded_tid)
+    } else if issuance_result_scr.data.starts_with("@00@") {
+        let opt_encoded_tid = issuance_result_scr.data.split('@').nth(2);
+        let Some(encoded_tid) = opt_encoded_tid else {
+            return Err(TransactionsOutcomeParserError::CannotExtractTokenIdentifierFromResult);
+        };
+
+        return hex_to_utf8(encoded_tid)
+    } else {
+        return Err(TransactionsOutcomeParserError::NoIssuedTokenIdentifierInTheResult)
+    }
+}
+
+fn extract_issued_token_identifier_from_set_special_role_event(event: &Events) -> Result<String, TransactionsOutcomeParserError> {
+    let Some(topics) = event.topics.as_ref() else {
+        return Err(TransactionsOutcomeParserError::EventDoesntHaveTopic)
+    };
+
+    let opt_encoded_tid = topics.get(0);
+    let Some(encoded_tid) = opt_encoded_tid else {
+        return Err(TransactionsOutcomeParserError::CannotExtractTokenIdentifierFromResult);
+    };
+
+    return base64_to_utf8(encoded_tid)
+}
+
+fn extract_roles_from_log(log: &Events) -> Result<Vec<EsdtLocalRole>, TransactionsOutcomeParserError> {
+    let Some(topics) = log.topics.as_ref() else {
+        return Err(TransactionsOutcomeParserError::EventDoesntHaveTopic)
+    };
+
+    let mut roles = vec![];
+    for topic_base64 in topics.iter().skip(3) {
+        let topic = base64_to_utf8(topic_base64)?;
+        let role = EsdtLocalRole::from(topic.as_bytes());
+
+        if role == EsdtLocalRole::None {
+            return Err(TransactionsOutcomeParserError::UnknownRoleFoundInEvent { role: topic.clone() })
+        }
+
+        roles.push(role);
+    }
+
+    Ok(roles)
 }
 
 fn base64_to_utf8(base64: &str) -> Result<String, TransactionsOutcomeParserError> {
@@ -192,9 +334,11 @@ fn hex_to_utf8(hex: &str) -> Result<String, TransactionsOutcomeParserError> {
 
 #[cfg(test)]
 mod tests {
+    use multiversx_sc::imports::EsdtLocalRole;
     use multiversx_sdk::data::address::Address;
-    use multiversx_sdk::data::transaction::{ApiLogs, Events, TransactionInfo, TransactionOnNetwork};
-    use crate::scenario_model::transaction::tx_outcome::{find_single_event_by_identifier, TransactionOutcome, TransactionsOutcomeParserError};
+    use multiversx_sdk::data::transaction::{ApiLogs, ApiSmartContractResult, Events, TransactionInfo, TransactionOnNetwork};
+    use multiversx_sdk::data::vm::CallType;
+    use crate::scenario_model::transaction::tx_outcome::{find_single_event_by_identifier, RegisterAndSetAllRolesOutcome, SetSpecialRoleOutcome, TransactionOutcome, TransactionsOutcomeParserError};
     use crate::scenario_model::TxResponse;
 
     #[test]
@@ -244,7 +388,72 @@ mod tests {
             events,
         };
 
-        let result = find_single_event_by_identifier(&Some(api_logs), "issue");
+        let result = find_single_event_by_identifier(&Some(api_logs), &vec![], "issue");
+
+        let expected_event = Events {
+            address: Address::from_bytes(Default::default()),
+            identifier: "issue".to_string(),
+            topics: None,
+            data: None,
+        };
+
+        assert_eq!(Ok(expected_event), result);
+    }
+
+    #[test]
+    fn test_find_single_event_by_identifier_event_exists_in_a_scr() {
+        let events = vec![];
+        let scrs = vec![
+            ApiSmartContractResult {
+                hash: Default::default(),
+                nonce: Default::default(),
+                value: Default::default(),
+                receiver: Address::from_bytes(Default::default()),
+                sender: Address::from_bytes(Default::default()),
+                data: Default::default(),
+                prev_tx_hash: Default::default(),
+                original_tx_hash: Default::default(),
+                gas_limit: Default::default(),
+                gas_price: Default::default(),
+                call_type: CallType::DirectCall,
+                relayer_address: None,
+                relayed_value: None,
+                code: None,
+                code_metadata: None,
+                return_message: None,
+                original_sender: None,
+                logs: Some(ApiLogs {
+                    address: Address::from_bytes(Default::default()),
+                    events: vec![
+                        Events {
+                            address: Address::from_bytes(Default::default()),
+                            identifier: "test".to_string(),
+                            topics: None,
+                            data: None,
+                        },
+                        Events {
+                            address: Address::from_bytes(Default::default()),
+                            identifier: "issue".to_string(),
+                            topics: None,
+                            data: None,
+                        },
+                        Events {
+                            address: Address::from_bytes(Default::default()),
+                            identifier: "test".to_string(),
+                            topics: None,
+                            data: None,
+                        },
+                    ],
+                }),
+            }
+        ];
+
+        let api_logs = ApiLogs {
+            address: Address::from_bytes(Default::default()),
+            events,
+        };
+
+        let result = find_single_event_by_identifier(&Some(api_logs), &scrs, "issue");
 
         let expected_event = Events {
             address: Address::from_bytes(Default::default()),
@@ -260,7 +469,7 @@ mod tests {
     fn test_find_single_event_by_identifier_no_event_at_all() {
         let api_logs = None;
 
-        let result = find_single_event_by_identifier(&api_logs, "issue");
+        let result = find_single_event_by_identifier(&api_logs, &vec![], "issue");
 
         let expected_error = TransactionsOutcomeParserError::NoEventOfType { r#type: "issue".to_string() };
 
@@ -295,7 +504,7 @@ mod tests {
             events,
         };
 
-        let result = find_single_event_by_identifier(&Some(api_logs), "unknown");
+        let result = find_single_event_by_identifier(&Some(api_logs), &vec![], "unknown");
 
         let expected_error = TransactionsOutcomeParserError::NoEventOfType { r#type: "unknown".to_string() };
 
@@ -330,7 +539,7 @@ mod tests {
             events,
         };
 
-        let result = find_single_event_by_identifier(&Some(api_logs), "test");
+        let result = find_single_event_by_identifier(&Some(api_logs), &vec![], "test");
 
         let expected_error = TransactionsOutcomeParserError::MoreThanOneEventOfType { r#type: "test".to_string() };
 
@@ -405,6 +614,58 @@ mod tests {
         let parsed_token = get_swap_tx().parse_register_meta_esdt();
 
         let expected: Result<String, TransactionsOutcomeParserError> = Err(TransactionsOutcomeParserError::NoResultToExtractTokenIdentifier { expected_issuance_start_data: "registerMetaESDT@".to_string() });
+
+        assert_eq!(parsed_token, expected);
+    }
+
+    #[test]
+    fn test_parse_register_and_set_all_roles_valid() {
+        let parsed_token = get_indirect_register_and_set_all_roles_tx().parse_register_and_set_all_roles();
+
+        let expected_token_identifier = "NNNTIKER-e248ba".to_string();
+        let expected_roles = vec![EsdtLocalRole::NftCreate, EsdtLocalRole::NftBurn, EsdtLocalRole::NftUpdateAttributes, EsdtLocalRole::NftAddUri];
+        let expected: Result<RegisterAndSetAllRolesOutcome, TransactionsOutcomeParserError> = Ok(
+            RegisterAndSetAllRolesOutcome {
+                token_identifier: expected_token_identifier,
+                roles: expected_roles,
+            }
+        );
+
+        assert_eq!(parsed_token, expected);
+    }
+
+    #[test]
+    fn test_parse_register_and_set_all_roles_invalid() {
+        let parsed_token = get_swap_tx().parse_register_and_set_all_roles();
+
+        let expected: Result<RegisterAndSetAllRolesOutcome, TransactionsOutcomeParserError> = Err(TransactionsOutcomeParserError::NoResultToExtractTokenIdentifier { expected_issuance_start_data: "registerAndSetAllRoles@".to_string() });
+
+        assert_eq!(parsed_token, expected);
+    }
+
+    #[test]
+    fn test_parse_set_special_roles_valid() {
+        let parsed_token = get_indirect_set_special_role().parse_set_special_roles();
+
+        let expected_user_address = Address::from_bech32_string("erd1qqqqqqqqqqqqqpgqczx92cj9sdl7q532n46vjthd2avpmd08v5ys0ffcq8").unwrap();
+        let expected_token_identifier = "HUTK-f9e2c8".to_string();
+        let expected_roles = vec![EsdtLocalRole::Mint, EsdtLocalRole::Burn];
+        let expected: Result<SetSpecialRoleOutcome, TransactionsOutcomeParserError> = Ok(
+            SetSpecialRoleOutcome {
+                user_address: expected_user_address,
+                token_identifier: expected_token_identifier,
+                roles: expected_roles,
+            }
+        );
+
+        assert_eq!(parsed_token, expected);
+    }
+
+    #[test]
+    fn test_parse_set_special_roles_invalid() {
+        let parsed_token = get_swap_tx().parse_set_special_roles();
+
+        let expected: Result<SetSpecialRoleOutcome, TransactionsOutcomeParserError> = Err(TransactionsOutcomeParserError::NoEventOfType { r#type: "ESDTSetRole".to_string() });
 
         assert_eq!(parsed_token, expected);
     }
@@ -1520,6 +1781,463 @@ mod tests {
               "fee": "2508254280000000",
               "chainID": "D",
               "version": 1,
+              "options": 0
+            }
+          },
+          "error": "",
+          "code": "successful"
+        }
+        "#;
+
+        let tx_on_network: TransactionOnNetwork = serde_json::from_str::<TransactionInfo>(data)
+            .unwrap()
+            .data
+            .unwrap()
+            .transaction;
+        TxResponse::from_network_tx(tx_on_network)
+    }
+
+    fn get_indirect_register_and_set_all_roles_tx() -> TxResponse {
+        let data = r#"
+        {
+          "data": {
+            "transaction": {
+              "type": "normal",
+              "processingTypeOnSource": "SCInvoking",
+              "processingTypeOnDestination": "SCInvoking",
+              "hash": "5095439f11e31c6b843f0fc5c35b3d7197998d4480597a862fde7c2464a7cb05",
+              "nonce": 5,
+              "round": 2662387,
+              "epoch": 1084,
+              "value": "50000000000000000",
+              "receiver": "erd1qqqqqqqqqqqqqpgqw0v648l5893udledkvl93elpk3ve8l0uah0slplrv2",
+              "sender": "erd19ehlnz7ncelmm57lfdq6ccxx3ethd49hydux4lc0sdh3swhzxj9q2dx5pa",
+              "gasPrice": 1000000000,
+              "gasLimit": 150000000,
+              "gasUsed": 150000000,
+              "data": "bGlzdGluZ0A2MjYxNjY3OTYyNjU2OTY0NzU2YjM1Nzg2NTMzNzA2OTc0MzMzMjc4NzU2YjcwNmU2NjdhNjQ2NjM0NjM2OTM3NjkzNjc4NjY3NTY0NmYzNzcwNzU3NDc1NzIzMjc4MzM2OTYzN2E2MjMzMzMzNjZmMzM3OTY1QEA0ZTRlNGUyMDY0NjU2ZTc1NmQ2OTcyNjUyMDIzQDAzZThANGU0ZTRlNGI0NTU5QDRlNGU0ZTU0NDk0YjQ1NTJAYzhAQDRlNGU0ZTU0NDE0N0AyZTZkNzAzNEAwMUAwMUBAQEBA",
+              "signature": "42893b48fc1d9cf3e9aaaffdf1740006c6e3158fce0325c81de2442f1e36c43d009d9c011f9e8b7c429026e674794b44054249326308954632bf3eb811837b03",
+              "sourceShard": 2,
+              "destinationShard": 1,
+              "blockNonce": 2599049,
+              "blockHash": "05eeb3aa29da7ade482ce8acebf4d9deac03fce2cdf543fe8fdf3d4e0b241a60",
+              "notarizedAtSourceInMetaNonce": 2600469,
+              "NotarizedAtSourceInMetaHash": "aa093c4de06e723031ee514c113dac4ae0dbb51cdac5e94a10baf8a14b28a88d",
+              "notarizedAtDestinationInMetaNonce": 2600473,
+              "notarizedAtDestinationInMetaHash": "b9c9b46b7268936f71c45ca8f8b43fda4ec0423b4d526aadd95597a2411590f4",
+              "miniblockType": "TxBlock",
+              "miniblockHash": "daee239dca4ec78b1e664a3fc9af2264958fd91accda5763d7b05239a61d3820",
+              "hyperblockNonce": 2600473,
+              "hyperblockHash": "b9c9b46b7268936f71c45ca8f8b43fda4ec0423b4d526aadd95597a2411590f4",
+              "timestamp": 1709974322,
+              "smartContractResults": [
+                {
+                  "hash": "1c58d030cf98ea80316fbd824cc4ae783f0bfa8d6334941cfec37163b21c729c",
+                  "nonce": 0,
+                  "value": 0,
+                  "receiver": "erd1qqqqqqqqqqqqqpgqw0v648l5893udledkvl93elpk3ve8l0uah0slplrv2",
+                  "sender": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u",
+                  "data": "@00@4e4e4e54494b45522d653234386261@d75baec91ae3f73074858677bf653d249c1c6e6da9e6d0b45f375c1e8ad51920@d0932a6f6c2c64123a6f792f4cb367e0fd1f96d0eda90a2a5cdab02f63741057@5095439f11e31c6b843f0fc5c35b3d7197998d4480597a862fde7c2464a7cb05@00",
+                  "prevTxHash": "498f12c4437d7283add035b579559f3d0ee957375bfc4a67dc71e597116f8aaf",
+                  "originalTxHash": "5095439f11e31c6b843f0fc5c35b3d7197998d4480597a862fde7c2464a7cb05",
+                  "gasLimit": 91786873,
+                  "gasPrice": 1000000000,
+                  "callType": 2,
+                  "originalSender": "erd19ehlnz7ncelmm57lfdq6ccxx3ethd49hydux4lc0sdh3swhzxj9q2dx5pa",
+                  "logs": {
+                    "address": "erd1qqqqqqqqqqqqqpgqw0v648l5893udledkvl93elpk3ve8l0uah0slplrv2",
+                    "events": [
+                      {
+                        "address": "erd1qqqqqqqqqqqqqpgqw0v648l5893udledkvl93elpk3ve8l0uah0slplrv2",
+                        "identifier": "callBack",
+                        "topics": [
+                          "ZW1pdF9saXN0aW5nX2V2ZW50",
+                          "AAAAO2JhZnliZWlkdWs1eGUzcGl0MzJ4dWtwbmZ6ZGY0Y2k3aTZ4ZnVkbzdwdXR1cjJ4M2ljemIzMzZvM3llAAAAAAAAAAZOTk5UQUcAAAAELm1wNAAAAA5OTk4gZGVudW1pcmUgIwEAAAAAyAAAAAAAAAAAAAAAAgPoAAAAD05OTlRJS0VSLWUyNDhiYQABAAAAAAAA"
+                        ],
+                        "data": null,
+                        "additionalData": [
+                          ""
+                        ]
+                      },
+                      {
+                        "address": "erd1qqqqqqqqqqqqqpgqw0v648l5893udledkvl93elpk3ve8l0uah0slplrv2",
+                        "identifier": "completedTxEvent",
+                        "topics": [
+                          "SY8SxEN9coOt0DW1eVWfPQ7pVzdb/Epn3HHllxFviq8="
+                        ],
+                        "data": null,
+                        "additionalData": null
+                      }
+                    ]
+                  },
+                  "operation": "transfer"
+                },
+                {
+                  "hash": "573efb0676de0601a6e279cc81c67f18f91e0f0fbb1ba9b1c933eac883632f58",
+                  "nonce": 1,
+                  "value": 816208080000000,
+                  "receiver": "erd1qqqqqqqqqqqqqpgqw0v648l5893udledkvl93elpk3ve8l0uah0slplrv2",
+                  "sender": "erd1qqqqqqqqqqqqqpgqw0v648l5893udledkvl93elpk3ve8l0uah0slplrv2",
+                  "data": "@6f6b",
+                  "prevTxHash": "1c58d030cf98ea80316fbd824cc4ae783f0bfa8d6334941cfec37163b21c729c",
+                  "originalTxHash": "5095439f11e31c6b843f0fc5c35b3d7197998d4480597a862fde7c2464a7cb05",
+                  "gasLimit": 0,
+                  "gasPrice": 1000000000,
+                  "callType": 0,
+                  "operation": "transfer",
+                  "isRefund": true
+                },
+                {
+                  "hash": "351caf3456f3ae8f7ec9e1e766d6ad7e7a82e1ee1f07c8f7949ef60688d0ea32",
+                  "nonce": 0,
+                  "value": 0,
+                  "receiver": "erd1lllllllllllllllllllllllllllllllllllllllllllllllllupq9x7ny0",
+                  "sender": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u",
+                  "data": "ESDTSetBurnRoleForAll@4e4e4e54494b45522d653234386261",
+                  "prevTxHash": "498f12c4437d7283add035b579559f3d0ee957375bfc4a67dc71e597116f8aaf",
+                  "originalTxHash": "5095439f11e31c6b843f0fc5c35b3d7197998d4480597a862fde7c2464a7cb05",
+                  "gasLimit": 0,
+                  "gasPrice": 1000000000,
+                  "callType": 0,
+                  "originalSender": "erd19ehlnz7ncelmm57lfdq6ccxx3ethd49hydux4lc0sdh3swhzxj9q2dx5pa",
+                  "logs": {
+                    "address": "erd1lllllllllllllllllllllllllllllllllllllllllllllllllupq9x7ny0",
+                    "events": [
+                      {
+                        "address": "erd1lllllllllllllllllllllllllllllllllllllllllllllllllupq9x7ny0",
+                        "identifier": "completedTxEvent",
+                        "topics": [
+                          "SY8SxEN9coOt0DW1eVWfPQ7pVzdb/Epn3HHllxFviq8="
+                        ],
+                        "data": null,
+                        "additionalData": null
+                      }
+                    ]
+                  },
+                  "operation": "transfer"
+                },
+                {
+                  "hash": "498f12c4437d7283add035b579559f3d0ee957375bfc4a67dc71e597116f8aaf",
+                  "nonce": 0,
+                  "value": 50000000000000000,
+                  "receiver": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u",
+                  "sender": "erd1qqqqqqqqqqqqqpgqw0v648l5893udledkvl93elpk3ve8l0uah0slplrv2",
+                  "data": "registerAndSetAllRoles@4e4e4e4b4559@4e4e4e54494b4552@4e4654@@d0932a6f6c2c64123a6f792f4cb367e0fd1f96d0eda90a2a5cdab02f63741057@5095439f11e31c6b843f0fc5c35b3d7197998d4480597a862fde7c2464a7cb05@84128c",
+                  "prevTxHash": "5095439f11e31c6b843f0fc5c35b3d7197998d4480597a862fde7c2464a7cb05",
+                  "originalTxHash": "5095439f11e31c6b843f0fc5c35b3d7197998d4480597a862fde7c2464a7cb05",
+                  "gasLimit": 141786873,
+                  "gasPrice": 1000000000,
+                  "callType": 1,
+                  "originalSender": "erd19ehlnz7ncelmm57lfdq6ccxx3ethd49hydux4lc0sdh3swhzxj9q2dx5pa",
+                  "operation": "transfer",
+                  "function": "registerAndSetAllRoles"
+                },
+                {
+                  "hash": "fea9fe80599595ed277d1ca8b33afd99a01cc266faa62f3f719a5573e7baa2fe",
+                  "nonce": 0,
+                  "value": 0,
+                  "receiver": "erd1llllllllllllllllllllllllllllllllllllllllllllllllluqsl6e366",
+                  "sender": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u",
+                  "data": "ESDTSetBurnRoleForAll@4e4e4e54494b45522d653234386261",
+                  "prevTxHash": "498f12c4437d7283add035b579559f3d0ee957375bfc4a67dc71e597116f8aaf",
+                  "originalTxHash": "5095439f11e31c6b843f0fc5c35b3d7197998d4480597a862fde7c2464a7cb05",
+                  "gasLimit": 0,
+                  "gasPrice": 1000000000,
+                  "callType": 0,
+                  "originalSender": "erd19ehlnz7ncelmm57lfdq6ccxx3ethd49hydux4lc0sdh3swhzxj9q2dx5pa",
+                  "logs": {
+                    "address": "erd1llllllllllllllllllllllllllllllllllllllllllllllllluqsl6e366",
+                    "events": [
+                      {
+                        "address": "erd1llllllllllllllllllllllllllllllllllllllllllllllllluqsl6e366",
+                        "identifier": "completedTxEvent",
+                        "topics": [
+                          "SY8SxEN9coOt0DW1eVWfPQ7pVzdb/Epn3HHllxFviq8="
+                        ],
+                        "data": null,
+                        "additionalData": null
+                      }
+                    ]
+                  },
+                  "operation": "transfer"
+                },
+                {
+                  "hash": "73367e24dd5e7a77be6a0d24dff90fabe12901aa8cfe2054edda0dd28ef0020e",
+                  "nonce": 0,
+                  "value": 0,
+                  "receiver": "erd1qqqqqqqqqqqqqpgqw0v648l5893udledkvl93elpk3ve8l0uah0slplrv2",
+                  "sender": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u",
+                  "data": "ESDTSetRole@4e4e4e54494b45522d653234386261@45534454526f6c654e4654437265617465@45534454526f6c654e46544275726e@45534454526f6c654e465455706461746541747472696275746573@45534454526f6c654e4654416464555249",
+                  "prevTxHash": "498f12c4437d7283add035b579559f3d0ee957375bfc4a67dc71e597116f8aaf",
+                  "originalTxHash": "5095439f11e31c6b843f0fc5c35b3d7197998d4480597a862fde7c2464a7cb05",
+                  "gasLimit": 0,
+                  "gasPrice": 1000000000,
+                  "callType": 0,
+                  "originalSender": "erd19ehlnz7ncelmm57lfdq6ccxx3ethd49hydux4lc0sdh3swhzxj9q2dx5pa",
+                  "logs": {
+                    "address": "erd1qqqqqqqqqqqqqpgqw0v648l5893udledkvl93elpk3ve8l0uah0slplrv2",
+                    "events": [
+                      {
+                        "address": "erd1qqqqqqqqqqqqqpgqw0v648l5893udledkvl93elpk3ve8l0uah0slplrv2",
+                        "identifier": "ESDTSetRole",
+                        "topics": [
+                          "Tk5OVElLRVItZTI0OGJh",
+                          "",
+                          "",
+                          "RVNEVFJvbGVORlRDcmVhdGU=",
+                          "RVNEVFJvbGVORlRCdXJu",
+                          "RVNEVFJvbGVORlRVcGRhdGVBdHRyaWJ1dGVz",
+                          "RVNEVFJvbGVORlRBZGRVUkk="
+                        ],
+                        "data": null,
+                        "additionalData": null
+                      },
+                      {
+                        "address": "erd1qqqqqqqqqqqqqpgqw0v648l5893udledkvl93elpk3ve8l0uah0slplrv2",
+                        "identifier": "completedTxEvent",
+                        "topics": [
+                          "SY8SxEN9coOt0DW1eVWfPQ7pVzdb/Epn3HHllxFviq8="
+                        ],
+                        "data": null,
+                        "additionalData": null
+                      }
+                    ]
+                  },
+                  "operation": "ESDTSetRole",
+                  "function": "ESDTSetRole"
+                }
+              ],
+              "logs": {
+                "address": "erd1qqqqqqqqqqqqqpgqw0v648l5893udledkvl93elpk3ve8l0uah0slplrv2",
+                "events": [
+                  {
+                    "address": "erd1qqqqqqqqqqqqqpgqw0v648l5893udledkvl93elpk3ve8l0uah0slplrv2",
+                    "identifier": "transferValueOnly",
+                    "topics": [
+                      "saK8LsUAAA==",
+                      "AAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAC//8="
+                    ],
+                    "data": "QXN5bmNDYWxs",
+                    "additionalData": [
+                      "QXN5bmNDYWxs",
+                      "cmVnaXN0ZXJBbmRTZXRBbGxSb2xlcw==",
+                      "Tk5OS0VZ",
+                      "Tk5OVElLRVI=",
+                      "TkZU",
+                      ""
+                    ]
+                  },
+                  {
+                    "address": "erd1qqqqqqqqqqqqqpgqw0v648l5893udledkvl93elpk3ve8l0uah0slplrv2",
+                    "identifier": "writeLog",
+                    "topics": [
+                      "Lm/5i9PGf73T30tBrGDGjld21LcjeGr/D4NvGDriNIo="
+                    ],
+                    "data": "QDZmNmI=",
+                    "additionalData": [
+                      "QDZmNmI="
+                    ]
+                  }
+                ]
+              },
+              "status": "success",
+              "operation": "transfer",
+              "function": "listing",
+              "initiallyPaidFee": "1888080000000000",
+              "fee": "1888080000000000",
+              "chainID": "D",
+              "version": 1,
+              "options": 0
+            }
+          },
+          "error": "",
+          "code": "successful"
+        }
+        "#;
+
+        let tx_on_network: TransactionOnNetwork = serde_json::from_str::<TransactionInfo>(data)
+            .unwrap()
+            .data
+            .unwrap()
+            .transaction;
+        TxResponse::from_network_tx(tx_on_network)
+    }
+
+    fn get_indirect_set_special_role() -> TxResponse {
+        let data = r#"
+        {
+          "data": {
+            "transaction": {
+              "type": "normal",
+              "processingTypeOnSource": "SCInvoking",
+              "processingTypeOnDestination": "SCInvoking",
+              "hash": "9938110c8660816bce1d125d93b6c7d5d3f05a84bee4a2af26c65579f9448d54",
+              "nonce": 2934,
+              "round": 2666959,
+              "epoch": 1086,
+              "value": "0",
+              "receiver": "erd1qqqqqqqqqqqqqpgqczx92cj9sdl7q532n46vjthd2avpmd08v5ys0ffcq8",
+              "sender": "erd1rc5p5drg26vggn6jx9puv6xlgka5n6ajm6cer554tzguwfm6v5ys2pr3pc",
+              "gasPrice": 1000000000,
+              "gasLimit": 500000000,
+              "gasUsed": 500000000,
+              "data": "c2V0TWFya2V0Um9sZXM=",
+              "signature": "0f1bee09f1c1f6b4753b464b6ddaf5cd4397311a2de4a48c885f00cb4dcb642cab2bf2a1d3a9420012a930ce66b94ec2f70d26eb3fee84af0230d4ba5899450b",
+              "sourceShard": 1,
+              "destinationShard": 1,
+              "blockNonce": 2603621,
+              "blockHash": "cbb1a98994c81f0411078e515705523bb4e4dac53f285c4ba8ec4d5051a9a4b9",
+              "notarizedAtSourceInMetaNonce": 2605045,
+              "NotarizedAtSourceInMetaHash": "4b802301ebe6b970ae0676e1d2a6122c0047963c2b94ecf1c7a8c6bde92a65fb",
+              "notarizedAtDestinationInMetaNonce": 2605045,
+              "notarizedAtDestinationInMetaHash": "4b802301ebe6b970ae0676e1d2a6122c0047963c2b94ecf1c7a8c6bde92a65fb",
+              "miniblockType": "TxBlock",
+              "miniblockHash": "4108457fdd79754aaff59c34948a36743087df4629acd77f7cbeb1045c61a47d",
+              "hyperblockNonce": 2605045,
+              "hyperblockHash": "4b802301ebe6b970ae0676e1d2a6122c0047963c2b94ecf1c7a8c6bde92a65fb",
+              "timestamp": 1710001754,
+              "smartContractResults": [
+                {
+                  "hash": "cfa868f6cb3f609fc68bd46ea814b4d13ef9c29bfd72e4422e4744a764726052",
+                  "nonce": 0,
+                  "value": 0,
+                  "receiver": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u",
+                  "sender": "erd1qqqqqqqqqqqqqpgqczx92cj9sdl7q532n46vjthd2avpmd08v5ys0ffcq8",
+                  "data": "setSpecialRole@4855544b2d663965326338@00000000000000000500c08c556245837fe0522a9d74c92eed57581db5e76509@45534454526f6c654c6f63616c4d696e74@45534454526f6c654c6f63616c4275726e@46a1a392909013cffdddb484da1c0c490f70499d00c6c43635998cb9935cc18d@9938110c8660816bce1d125d93b6c7d5d3f05a84bee4a2af26c65579f9448d54@6e11bc",
+                  "prevTxHash": "9938110c8660816bce1d125d93b6c7d5d3f05a84bee4a2af26c65579f9448d54",
+                  "originalTxHash": "9938110c8660816bce1d125d93b6c7d5d3f05a84bee4a2af26c65579f9448d54",
+                  "gasLimit": 495312637,
+                  "gasPrice": 1000000000,
+                  "callType": 1,
+                  "originalSender": "erd1rc5p5drg26vggn6jx9puv6xlgka5n6ajm6cer554tzguwfm6v5ys2pr3pc",
+                  "operation": "transfer",
+                  "function": "setSpecialRole"
+                },
+                {
+                  "hash": "14ea28181d9fedc6df4897f6819d765f5403b1b3a42c71181a21a9281aacdc02",
+                  "nonce": 0,
+                  "value": 0,
+                  "receiver": "erd1qqqqqqqqqqqqqpgqczx92cj9sdl7q532n46vjthd2avpmd08v5ys0ffcq8",
+                  "sender": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u",
+                  "data": "ESDTSetRole@4855544b2d663965326338@45534454526f6c654c6f63616c4d696e74@45534454526f6c654c6f63616c4275726e",
+                  "prevTxHash": "cfa868f6cb3f609fc68bd46ea814b4d13ef9c29bfd72e4422e4744a764726052",
+                  "originalTxHash": "9938110c8660816bce1d125d93b6c7d5d3f05a84bee4a2af26c65579f9448d54",
+                  "gasLimit": 0,
+                  "gasPrice": 1000000000,
+                  "callType": 0,
+                  "originalSender": "erd1rc5p5drg26vggn6jx9puv6xlgka5n6ajm6cer554tzguwfm6v5ys2pr3pc",
+                  "logs": {
+                    "address": "erd1qqqqqqqqqqqqqpgqczx92cj9sdl7q532n46vjthd2avpmd08v5ys0ffcq8",
+                    "events": [
+                      {
+                        "address": "erd1qqqqqqqqqqqqqpgqczx92cj9sdl7q532n46vjthd2avpmd08v5ys0ffcq8",
+                        "identifier": "ESDTSetRole",
+                        "topics": [
+                          "SFVUSy1mOWUyYzg=",
+                          "",
+                          "",
+                          "RVNEVFJvbGVMb2NhbE1pbnQ=",
+                          "RVNEVFJvbGVMb2NhbEJ1cm4="
+                        ],
+                        "data": null,
+                        "additionalData": null
+                      },
+                      {
+                        "address": "erd1qqqqqqqqqqqqqpgqczx92cj9sdl7q532n46vjthd2avpmd08v5ys0ffcq8",
+                        "identifier": "completedTxEvent",
+                        "topics": [
+                          "z6ho9ss/YJ/Gi9RuqBS00T75wpv9cuRCLkdEp2RyYFI="
+                        ],
+                        "data": null,
+                        "additionalData": null
+                      }
+                    ]
+                  },
+                  "operation": "ESDTSetRole",
+                  "function": "ESDTSetRole"
+                },
+                {
+                  "hash": "e07b74dd4622ebef44fc876f8e6e78857fd5dca938e9c52be102c9d09c10b4b0",
+                  "nonce": 0,
+                  "value": 0,
+                  "receiver": "erd1qqqqqqqqqqqqqpgqczx92cj9sdl7q532n46vjthd2avpmd08v5ys0ffcq8",
+                  "sender": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u",
+                  "data": "@00@625ca4cffc098bd8433353aeefae63e842c74f913184758fc5e872ae18d43eb6@46a1a392909013cffdddb484da1c0c490f70499d00c6c43635998cb9935cc18d@9938110c8660816bce1d125d93b6c7d5d3f05a84bee4a2af26c65579f9448d54@00",
+                  "prevTxHash": "cfa868f6cb3f609fc68bd46ea814b4d13ef9c29bfd72e4422e4744a764726052",
+                  "originalTxHash": "9938110c8660816bce1d125d93b6c7d5d3f05a84bee4a2af26c65579f9448d54",
+                  "gasLimit": 445312637,
+                  "gasPrice": 1000000000,
+                  "callType": 2,
+                  "originalSender": "erd1rc5p5drg26vggn6jx9puv6xlgka5n6ajm6cer554tzguwfm6v5ys2pr3pc",
+                  "logs": {
+                    "address": "erd1qqqqqqqqqqqqqpgqczx92cj9sdl7q532n46vjthd2avpmd08v5ys0ffcq8",
+                    "events": [
+                      {
+                        "address": "erd1qqqqqqqqqqqqqpgqczx92cj9sdl7q532n46vjthd2avpmd08v5ys0ffcq8",
+                        "identifier": "writeLog",
+                        "topics": [
+                          "AAAAAAAAAAAFAMCMVWJFg3/gUiqddMku7VdYHbXnZQk=",
+                          "QHRvbyBtdWNoIGdhcyBwcm92aWRlZCBmb3IgcHJvY2Vzc2luZzogZ2FzIHByb3ZpZGVkID0gNDQ1MzEyNjM3LCBnYXMgdXNlZCA9IDQxODAzMDg="
+                        ],
+                        "data": "QDZmNmI=",
+                        "additionalData": [
+                          "QDZmNmI="
+                        ]
+                      },
+                      {
+                        "address": "erd1qqqqqqqqqqqqqpgqczx92cj9sdl7q532n46vjthd2avpmd08v5ys0ffcq8",
+                        "identifier": "completedTxEvent",
+                        "topics": [
+                          "z6ho9ss/YJ/Gi9RuqBS00T75wpv9cuRCLkdEp2RyYFI="
+                        ],
+                        "data": null,
+                        "additionalData": null
+                      }
+                    ]
+                  },
+                  "operation": "transfer"
+                }
+              ],
+              "logs": {
+                "address": "erd1qqqqqqqqqqqqqpgqczx92cj9sdl7q532n46vjthd2avpmd08v5ys0ffcq8",
+                "events": [
+                  {
+                    "address": "erd1qqqqqqqqqqqqqpgqczx92cj9sdl7q532n46vjthd2avpmd08v5ys0ffcq8",
+                    "identifier": "transferValueOnly",
+                    "topics": [
+                      "",
+                      "AAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAC//8="
+                    ],
+                    "data": "QXN5bmNDYWxs",
+                    "additionalData": [
+                      "QXN5bmNDYWxs",
+                      "c2V0U3BlY2lhbFJvbGU=",
+                      "SFVUSy1mOWUyYzg=",
+                      "AAAAAAAAAAAFAMCMVWJFg3/gUiqddMku7VdYHbXnZQk=",
+                      "RVNEVFJvbGVMb2NhbE1pbnQ=",
+                      "RVNEVFJvbGVMb2NhbEJ1cm4="
+                    ]
+                  },
+                  {
+                    "address": "erd1qqqqqqqqqqqqqpgqczx92cj9sdl7q532n46vjthd2avpmd08v5ys0ffcq8",
+                    "identifier": "writeLog",
+                    "topics": [
+                      "HigaNGhWmIRPUjFDxmjfRbtJ67LesZHSlViRxyd6ZQk="
+                    ],
+                    "data": "QDZmNmI=",
+                    "additionalData": [
+                      "QDZmNmI="
+                    ]
+                  }
+                ]
+              },
+              "status": "success",
+              "operation": "transfer",
+              "function": "setMarketRoles",
+              "initiallyPaidFee": "5070290000000000",
+              "fee": "5070290000000000",
+              "chainID": "D",
+              "version": 2,
               "options": 0
             }
           },
