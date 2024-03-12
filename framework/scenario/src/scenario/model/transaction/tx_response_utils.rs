@@ -31,5 +31,5 @@ pub fn decode_scr_data_or_panic(data: &str) -> Vec<Vec<u8>> {
 
 /// Checks if the given smart contract result is an out smart contract result.
 pub fn is_out_scr(scr: &&ApiSmartContractResult) -> bool {
-    scr.nonce != 0 && scr.data.starts_with('@')
+    scr.nonce != 0 && scr.data.as_ref().map(String::as_ref).unwrap_or("").starts_with('@')
 }

@@ -149,7 +149,7 @@ impl TxResponse {
         let out_scr = self.api_scrs.iter().find(is_out_scr);
 
         if let Some(out_scr) = out_scr {
-            self.out = decode_scr_data_or_panic(&out_scr.data);
+            self.out = decode_scr_data_or_panic(&out_scr.data.as_ref().map(String::as_ref).unwrap_or(""));
         } else if let Some(data) = self.process_out_from_log() {
             self.out = data
         }
